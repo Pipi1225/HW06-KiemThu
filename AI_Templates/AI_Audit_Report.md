@@ -50,19 +50,27 @@ Bạn hãy đóng vai trò làm trợ lý, dựa vào các thiết kế hệ th�
 
 ### Artifact 3: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 11:22 01/09/2026
 - **Prompt:**
+```text
+Bạn hãy generate cho tôi 35 test cases cho FR-04: Quản lý hồ sơ cá nhân. Sử dụng endpoint là PUT /api/users/me.
 
-**2. AI Output:**
+Toàn bộ context cần thiết đã nằm sẵn trong @[d:\DaiHoc\KiemThuPM\HW06\api_constraint.md] và @[d:\DaiHoc\KiemThuPM\HW06\api_specification.md] 
+```
+
+**2. AI Output:** Đã tạo ra mã kịch bản Postman Test (với hơn 35 test cases) cho API `PUT /api/users/me` (FR-04), đảm bảo kiểm thử toàn diện về Schema Validation, Domain Partitions, Security và State Transitions dựa trên constraint và spec được cung cấp.
 
 ### Artifact 4: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 11:25 01/09/2026
 - **Prompt:**
+```text
+Bạn hãy paste 37 test cases bạn vừa tạo vào bảng FR-04 ở @[d:\DaiHoc\KiemThuPM\HW06\Main_Report.md] 
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã xuất và định dạng 37 test cases của FR-04 thành các hàng trong bảng Markdown tại file `Main_Report.md` (bao gồm cột số thứ tự, tựa đề, và nội dung chi tiết) để sinh viên tiện thực hiện bước Audit.
 
 ### Artifact 5: 
 **1. Prompt + Tool**
