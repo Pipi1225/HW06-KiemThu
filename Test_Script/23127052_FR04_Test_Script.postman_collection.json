@@ -1,0 +1,2040 @@
+{
+  "info": {
+    "_postman_id": "8b336f12-0d01-444f-aa7e-f47b6a517fdb",
+    "name": "23127052_FR04_Test_Script",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50570624",
+    "_collection_link": "https://go.postman.co/collection/50570624-8b336f12-0d01-444f-aa7e-f47b6a517fdb?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Save Auth Token and User ID\", function () {\r",
+              "     pm.environment.set(\"auth_token\", responseData.token);\r",
+              "     pm.environment.set(\"user_id\", responseData.user.id);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Valid)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseSchema = {\r",
+              "    \"type\": \"object\",\r",
+              "    \"properties\": {\r",
+              "        \"message\": { \"type\": \"string\" }\r",
+              "    },\r",
+              "    \"required\": [\"message\"]\r",
+              "};\r",
+              "\r",
+              "if (pm.response.code === 200) {\r",
+              "    pm.test(\"1. [Schema] Response trả về đúng định dạng JSON object\", function () {\r",
+              "        pm.response.to.be.json;\r",
+              "        pm.response.to.be.an(\"object\");\r",
+              "    });\r",
+              "\r",
+              "    pm.test(\"2. [Schema] Response có chứa message báo thành công\", function () {\r",
+              "        const res = pm.response.json();\r",
+              "        pm.expect(res).to.have.property(\"message\");\r",
+              "        pm.expect(res.message).to.eql(\"Profile updated\");\r",
+              "    });\r",
+              "\r",
+              "    // Test 3 [Schema] Cấu trúc đối tượng user - ĐÃ LOẠI BỎ (Invalid)\r",
+              "\r",
+              "    pm.test(\"4. [Schema] Validation bằng thư viện tv4/ajv để match 100% schema\", function () {\r",
+              "        pm.response.to.have.jsonSchema(responseSchema);\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "pm.test(\"5. [Domain - Valid] Cập nhật thành công với số điện thoại 10 số (Bắt đầu bằng 0)\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// API Chaining: Verify state via GET\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "            pm.test(\"32. [State] Trạng thái thay đổi thành công: Tên trả về đúng với tên vừa gửi\", function () {\r",
+              "                if (reqBody.name && reqBody.name !== \"' OR 1=1 --\" && !reqBody.name.includes(\"<script>\")) {\r",
+              "                    pm.expect(dbUser.name).to.eql(reqBody.name);\r",
+              "                }\r",
+              "            });\r",
+              "\r",
+              "            pm.test(\"33. [State] Trạng thái thay đổi thành công: SĐT trả về đúng với SĐT vừa gửi\", function () {\r",
+              "                if (reqBody.phone) pm.expect(dbUser.phone).to.eql(reqBody.phone);\r",
+              "            });\r",
+              "\r",
+              "            pm.test(\"34. [State] Trạng thái thay đổi thành công: Địa chỉ trả về đúng với địa chỉ vừa gửi\", function () {\r",
+              "                if (reqBody.shipping_address && !reqBody.shipping_address.includes(\"<img\")) {\r",
+              "                    pm.expect(dbUser.shipping_address).to.eql(reqBody.shipping_address);\r",
+              "                }\r",
+              "            });\r",
+              "            \r",
+              "            pm.test(\"35. [Workflow] Lưu info vào Environment Variable để chuẩn bị test tiếp\", function () {\r",
+              "                pm.environment.set(\"expected_name\", dbUser.name);\r",
+              "                pm.environment.set(\"expected_phone\", dbUser.phone);\r",
+              "                pm.environment.set(\"expected_address\", dbUser.shipping_address);\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Nguyen Van A\",\r\n  \"phone\": \"0912345678\",\r\n  \"shipping_address\": \"123 Le Loi, Q1\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Valid SĐT 11 số)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"6. [Domain - Valid] Cập nhật thành công với số điện thoại 11 số (Bắt đầu bằng 0)\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Nguyen Van B\",\r\n  \"phone\": \"01234567890\",\r\n  \"shipping_address\": \"123 Le Loi\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Valid Tên chứa khoảng trắng)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"7. [Domain - Valid] Tên hợp lệ, chứa khoảng trắng (VD: Nguyen Van A)\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Le Thi C\",\r\n  \"phone\": \"0912345678\",\r\n  \"shipping_address\": \"123 Le Loi\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Valid Tên cực dài)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"8. [Domain - Valid] Tên hợp lệ, độ dài tối đa (255 ký tự)\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"phone\": \"0912345678\",\r\n  \"shipping_address\": \"123 Le Loi\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Valid Địa chỉ chứa số và ký tự)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"9. [Domain - Valid] Địa chỉ hợp lệ chứa số và ký tự đặc biệt\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Nguyen Van D\",\r\n  \"phone\": \"0912345678\",\r\n  \"shipping_address\": \"78/9A Nguyễn Trãi, Q.5, TP.HCM!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT quá ngắn)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"10. [Domain - Invalid] SĐT quá ngắn (9 số) -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"091234567\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT quá dài)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"11. [Domain - Invalid] SĐT quá dài (12 số) -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"091234567890\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT sai đầu số)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"12. [Domain - Invalid] SĐT không bắt đầu bằng 0 -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"8491234567\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT chứa chữ)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"13. [Domain - Invalid] SĐT chứa chữ cái -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"091234567a\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT chứa ký tự đặc biệt)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"14. [Domain - Invalid] SĐT chứa ký tự đặc biệt -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"0912-345-678\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT rỗng)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"15. [Domain - Invalid] SĐT là chuỗi rỗng -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Huy\",\r\n  \"phone\": \"\",\r\n  \"shipping_address\": \"HCM\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid SĐT null)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"16. [Domain - Edge] SĐT là null -> 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": null,\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid Tên chuỗi rỗng)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"17. [Domain - Invalid] Tên chuỗi rỗng -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid Tên toàn khoảng trắng)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"18. [Domain - Edge] Tên toàn khoảng trắng -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"   \",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid Tên quá 255 ký tự)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"19. [Domain - Edge] Tên quá 255 ký tự -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid Thiếu trường Name)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"20. [Domain - Edge] Thiếu trường name -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Invalid Địa chỉ siêu dài)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"21. [Domain - Edge] Địa chỉ siêu dài -> 400/413\", function () {\r",
+              "    pm.expect(pm.response.code).to.not.be.oneOf([200, 201]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security Thiếu Auth)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"22. [Security] Thiếu Auth Header -> 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nguyen Van A\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"123 Le Loi, Q1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security Sai Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"23. [Security] Token sai -> 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "invalid_token",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nguyen Van A\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"123 Le Loi, Q1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security Cố đổi Email)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"24. [Security - SEC-06] Xử lý email an toàn -> 200 (nhưng ko đổi email)\", function () {\r",
+              "    const res = pm.response.json();\r",
+              "    pm.expect(res.message).to.eql(\"Profile updated\"); // Cannot verify email without GET API\r",
+              "});\r",
+              "\r",
+              "// --- API CHAINING: VERIFY STATE VIA GET REQUEST ---\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh Security: Email không bị thay đổi\", function () {\r",
+              "                pm.expect(dbUser.email).to.not.eql(reqBody.email);\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\",\n  \"email\": \"hacked@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security Cố đổi Role)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"25. [Security - SEC-06] Xử lý role an toàn -> 200 (vẫn là user)\", function () {\r",
+              "    const res = pm.response.json();\r",
+              "    pm.expect(res.message).to.eql(\"Profile updated\"); // Cannot verify role without GET API\r",
+              "});",
+              "\r",
+              "// --- API CHAINING: VERIFY STATE VIA GET REQUEST ---\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh Security: Role không bị leo thang\", function () {\r",
+              "                pm.expect(dbUser.role).to.not.eql(\"admin\");\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\",\n  \"role\": \"admin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security SQLi Name)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"26. [Security - SQLi] Tấn công SQLi Name -> Không sập 500\", function () {\r",
+              "    pm.response.to.not.have.status(500);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"' OR 1=1 --\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security SQLi Phone)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"27. [Security - SQLi] SQLi vào phone bị chặn regex -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678'\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security XSS Name)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"28. [Security - XSS] Script độc -> Không sập 500\", function () {\r",
+              "    pm.response.to.not.have.status(500);\r",
+              "});",
+              "\r",
+              "// --- API CHAINING: VERIFY STATE VIA GET REQUEST ---\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh Security: XSS Name đã được Sanitize\", function () {\r",
+              "                pm.expect(dbUser.name).to.not.include(\"<script>\");\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"<script>alert(1)</script>\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security XSS Địa chỉ)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"29. [Security - XSS] XSS Địa chỉ an toàn\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(pm.response.text()).to.not.include(\"<img src=x onerror=alert(1)>\");\r",
+              "});",
+              "\r",
+              "// --- API CHAINING: VERIFY STATE VIA GET REQUEST ---\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh Security: XSS Address đã được Sanitize\", function () {\r",
+              "                if (dbUser.shipping_address) {\r",
+              "                    pm.expect(dbUser.shipping_address).to.not.include(\"<img\");\r",
+              "                }\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"<img src=x onerror=alert(1)>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security IDOR sửa profile khác)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"30. [Security - IDOR] ID không bị thay đổi\", function () {\r",
+              "    const res = pm.response.json();\r",
+              "    pm.expect(res.message).to.eql(\"Profile updated\"); // Cannot verify ID without GET API\r",
+              "});",
+              "\r",
+              "// --- API CHAINING: VERIFY STATE VIA GET REQUEST ---\r",
+              "if (pm.response.code === 200) {\r",
+              "    const getRequest = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/users/me',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getRequest, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const dbUser = res.json();\r",
+              "            const reqBody = JSON.parse(pm.request.body.raw);\r",
+              "            \r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh Security: ID không bị ghi đè\", function () {\r",
+              "                pm.expect(dbUser.id).to.not.eql(2);\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\",\n  \"id\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Security Gửi XML)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"31. [Security] Gửi XML thay vì JSON -> Báo lỗi 400/415\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 415]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<xml><name>Huy</name></xml>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Extend Payload quá khổ)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E1. [Security] Gửi payload quá khổ -> 413 Payload Too Large\", function () {\r",
+              "    pm.response.to.have.status(413);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. Hãy copy dòng chữ này paste liên tục 50 lần để tạo ra một file siêu to khổng lồ nặng vài Megabytes nhằm đánh sập server nhé. \"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Extend Tên chứa Emoji)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E2. [Domain] Tên chứa Emoji -> 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy 🧑‍💻\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Extend Chứa trường lạ)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E3. [Logic] Thêm trường is_vip -> 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"HCM\",\n  \"is_vip\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Extend SĐT có +84)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E4. [Format] SĐT chứa mã quốc gia -> 400\", function () {\r",
+              "    pm.response.to.have.status(400);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Huy\",\n  \"phone\": \"+84912345678\",\n  \"shipping_address\": \"HCM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR-04 (Extend Sai HTTP Method POST)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E5. [Method] Gửi POST thay vì PUT -> 405 Method Not Allowed\", function () {\r",
+              "    pm.response.to.have.status(405);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nguyen Van A\",\n  \"phone\": \"0912345678\",\n  \"shipping_address\": \"123 Le Loi, Q1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.request.headers.add({\r",
+          "    key: 'X-Student-Id', \r",
+          "    value: '23127052'\r",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
