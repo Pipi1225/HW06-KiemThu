@@ -11,19 +11,42 @@ Em đã sử dụng AI cho những task sau đây:
 
 ### Artifact 1: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 20:51 31/08/2026
 - **Prompt:**
+```text
+Execute. Run the test cases with Postman + Newman (or Karate / RestAssured). Every request must carry the header X-Student-Id: {StudentID} (for example, via a pre-request script). Produce the Newman / HTMLreport.
 
-**2. AI Output:**
+yêu cầu này là sao nhỉ?
+```
+
+**2. AI Output:** Đã giải thích chi tiết ý nghĩa của yêu cầu kiểm thử tự động với Newman (hoặc Karate/RestAssured), cách thêm header `X-Student-Id` bằng Pre-request Script và cách xuất HTML report.
 
 ### Artifact 2: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 11:04 01/09/2026
 - **Prompt:**
+```text
+Bạn hãy tiến hành tạo cho tôi 1 agent skill phục vụ cho mục đích generate ra các test script (trong Postman).
 
-**2. AI Output:**
+Dưới đây là các ràng buộc mà agent skill phải tuyệt đối tuân thủ nghiêm ngặt:
+1. Số lượng Test Cases: Luôn đảm bảo sinh ra ít nhất 35 test cases (pm.test) cho mỗi API endpoint.
+2. Domain Partitions: Bao phủ hết toàn bộ parameters (giá trị hợp lệ, biên, lỗi, null, chuỗi rỗng).
+3. State Transitions: Kiểm tra sự thay đổi trạng thái trước và sau khi gọi API (đặc biệt các API tạo/sửa/xóa).
+4. Security (SEC-01 đến SEC-07): Bao phủ hết các case như SQL Injection, XSS, IDOR, role escalation, auth.
+5. Schema Validation: Dùng thư viện tv4/ajv để match 100% cấu trúc JSON response với đặc tả.
+
+Luồng hoạt động (workflow) của Skill phải tuân theo các bước sau:
+- Bước 1 (API Analysis): Đọc API Specs do tôi cung cấp, lấy ra parameters, methods và các roles yêu cầu (nếu cần).
+- Bước 2 (Test Planning): Lên kế hoạch để trải test cases bao phủ cả 4 mảng trên.
+- Bước 3 (Code Generation): Sinh mã JavaScript (pm.test). Đảm bảo đủ 35 cases, nếu cần thì tự động sinh thêm các extreme edge cases.
+- Bước 4 (Output): Trả về kịch bản Postman hoàn chỉnh có comment và đánh số thứ tự rõ ràng.
+
+Bạn hãy đóng vai trò làm trợ lý, dựa vào các thiết kế hệ thống và luồng hoạt động mà tôi đã ghi để viết nội dung Markdown hoàn chỉnh cho file `SKILL.md` dùng trong Antigravity.
+```
+
+**2. AI Output:** Đã tạo một custom agent skill tên là `postman_test_generator` với các hướng dẫn chi tiết để sinh Postman test scripts thỏa mãn yêu cầu.
 
 ### Artifact 3: 
 **1. Prompt + Tool**

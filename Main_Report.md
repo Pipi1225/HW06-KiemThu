@@ -5,6 +5,10 @@
 
 ---
 
+## AI Agent Skill Flow Diagram
+
+![Screenshot Agent Skill Flow Diagram](images/flow_diagram_agent_skill.jpg)
+
 ## 1. AI-Generated Test Script
 ### 1.1. FR-04: Quản lý hồ sơ cá nhân
 *   **API Endpoint sử dụng:** PUT /api/users/me
@@ -41,3 +45,4 @@
 ## 3. Bug Found During Execution
 
 ## 4. Postman Features được sử dụng trong bài 
+
