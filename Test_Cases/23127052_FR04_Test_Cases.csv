@@ -1,0 +1,43 @@
+﻿Test Case ID,Feature,Endpoint,Category,Created By,Test Objective,Test Description,Expected Result,AI Audit Status
+TC_FR04_01,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Schema Validation,AI-generated,[Schema] Response đúng định dạng JSON object,Kiểm tra response body phải là một JSON object.,200 OK,VALID
+TC_FR04_02,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Schema Validation,AI-generated,[Schema] Response chứa message,Kiểm tra JSON trả về có trường message báo 'Profile updated'.,200 OK,VALID
+TC_FR04_03,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Schema Validation,AI-generated,[Schema] User object khớp đặc tả,"Kiểm tra user object có `id`, `name`, `email`, `role`.",200 OK (User Object - Invalid Test),INVALID
+TC_FR04_04,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Schema Validation,AI-generated,[Schema] Validation với tv4/ajv,Dùng thư viện schema validator để đối chiếu JSON.,200 OK,VALID
+TC_FR04_05,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Valid] SĐT 10 số hợp lệ,Truyền SĐT 10 số (VD: 0912345678) -> Expect 200 OK.,200 OK,VALID
+TC_FR04_06,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Valid] SĐT 11 số hợp lệ,Truyền SĐT 11 số (VD: 01234567890) -> Expect 200 OK.,200 OK,VALID
+TC_FR04_07,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Valid] Tên chứa khoảng trắng,Truyền Tên bình thường hợp lệ -> Expect 200 OK.,200 OK,VALID
+TC_FR04_08,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Valid] Tên dài tối đa 255 ký tự,Truyền Tên dài đúng 255 ký tự -> Expect 200 OK.,200 OK,VALID
+TC_FR04_09,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Valid] Địa chỉ hợp lệ,"Truyền Địa chỉ chứa chữ, số, dấu phẩy -> Expect 200 OK.",200 OK,VALID
+TC_FR04_10,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT quá ngắn,Truyền SĐT 9 số -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_11,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT quá dài,Truyền SĐT 12 số -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_12,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT không bắt đầu bằng số 0,Truyền SĐT bắt đầu bằng số khác 0 -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_13,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT chứa chữ cái,Truyền SĐT có ký tự a-z -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_14,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT chứa ký tự đặc biệt,Truyền SĐT có dấu gạch ngang -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_15,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] SĐT là chuỗi rỗng,"Truyền SĐT """" -> Expect HTTP 400.",400 Bad Request,VALID
+TC_FR04_16,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Edge] SĐT là null,Truyền tham số phone = null -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_17,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] Tên chuỗi rỗng,"Truyền tên """" -> Expect HTTP 400.",400 Bad Request,VALID
+TC_FR04_18,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Edge] Tên toàn khoảng trắng,"Truyền tên ""   "" -> Expect HTTP 400.",400 Bad Request,VALID
+TC_FR04_19,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Edge] Tên quá 255 ký tự,Truyền tên 256 ký tự -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_20,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Edge] Thiếu trường Name,Không gửi tham số name -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_21,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Invalid] Địa chỉ chuỗi rỗng,"Truyền địa chỉ """" -> Expect HTTP 400.",200 OK,INCOMPLETE
+TC_FR04_22,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,AI-generated,[Domain - Edge] Địa chỉ siêu dài (>1000 chars),Truyền địa chỉ quá dài -> Expect HTTP 400/413.,400 Bad Request / 413 Payload Too Large,VALID
+TC_FR04_23,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SEC-02] Thiếu Authorization Header,Gửi request không có JWT -> Expect HTTP 401.,401 Unauthorized,VALID
+TC_FR04_24,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SEC-02] JWT sai hoặc hết hạn,Gửi JWT token không hợp lệ -> Expect HTTP 401.,401 Unauthorized,VALID
+TC_FR04_25,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SEC-06] Xử lý an toàn email,Cố tình truyền email mới -> DB không cập nhật email.,200 OK,VALID
+TC_FR04_26,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SEC-06] Xử lý an toàn role,Cố tình truyền role: admin -> Role vẫn là user.,200 OK,VALID
+TC_FR04_27,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SQLi] Tấn công SQL Injection vào name,Truyền payload SQLi vào name -> Không sập DB.,200 OK,VALID
+TC_FR04_28,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - SQLi] Tấn công SQL Injection vào phone,Truyền payload SQLi vào phone -> Lỗi 400.,400 Bad Request,VALID
+TC_FR04_29,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - XSS / SEC-04] Tấn công XSS vào name,Truyền `<script>` vào name -> Đã sanitize an toàn.,200 OK,VALID
+TC_FR04_30,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - XSS / SEC-04] Tấn công XSS vào địa chỉ,Truyền payload hình ảnh chứa mã XSS -> Xử lý an toàn.,200 OK,VALID
+TC_FR04_31,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - IDOR] Sửa profile user khác,Cố tình truyền id của người khác -> Chỉ cập nhật data của mình.,200 OK,VALID
+TC_FR04_32,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,AI-generated,[Security - ContentType] Gửi XML thay vì JSON,Sửa Content-Type thành XML -> Expect HTTP 400/415.,400 Bad Request / 415 Unsupported Media Type,VALID
+TC_FR04_33,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,State Transitions,AI-generated,[State] Tên thay đổi thành công,Gọi API GET /users/me sau khi PUT để lấy Tên so sánh.,200 OK,VALID
+TC_FR04_34,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,State Transitions,AI-generated,[State] SĐT thay đổi thành công,Gọi API GET /users/me sau khi PUT để lấy SĐT so sánh.,200 OK,VALID
+TC_FR04_35,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,State Transitions,AI-generated,[State] Địa chỉ thay đổi thành công,Gọi API GET /users/me sau khi PUT để lấy Địa chỉ so sánh.,200 OK,VALID
+TC_FR04_36,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,General,AI-generated,[Performance] Thời gian phản hồi < 1000ms,Expect API xử lý trong thời gian nhanh.,Response Time < 1000ms,INVALID
+TC_FR04_37,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,General,AI-generated,[Workflow] Lưu biến môi trường,Đưa data response vào biến Postman để chuẩn bị verify.,200 OK,VALID
+TC_FR04_E1,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Security,Human-extended (Người làm),[Security] Gửi payload lớn (DoS),Truyền chuỗi rất lớn (vài Megabytes) vào trường name/address -> Expect HTTP 413 Payload Too Large.,413 Payload Too Large,VALID
+TC_FR04_E2,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Domain Partitions,Human-extended (Người làm),[Domain] Tên chứa ký tự Unicode/Emoji,"Truyền Tên ""Nguyễn Văn A 🧑‍💻"" -> Expect 200 OK.",200 OK,VALID
+TC_FR04_E3,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,Business Logic,Human-extended (Người làm),[Business Logic] Payload chứa trường không xác định,Thêm tham số `is_vip: true` vào JSON request -> Expect 200 OK.,200 OK,VALID
+TC_FR04_E4,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,General,Human-extended (Người làm),[Format] Số điện thoại chứa mã quốc gia,Truyền SĐT dạng `+84912345678` thay vì `09...` -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR04_E5,FR-04: Quản lý hồ sơ cá nhân,PUT /api/users/me,HTTP Protocol,Human-extended (Người làm),[Method] Gửi sai HTTP Method,Gửi request update bằng phương thức `POST` thay vì `PUT` -> Expect HTTP 405 Method Not Allowed.,405 Method Not Allowed,VALID

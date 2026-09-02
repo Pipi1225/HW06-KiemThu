@@ -1,0 +1,41 @@
+Test Case ID,Feature,Endpoint,Category,Created By,Test Objective,Test Description,Expected Result,AI Audit Status
+TC_FR07_01,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Schema Validation,AI-generated,[Schema] Response khớp 100% với Schema định nghĩa,Kiểm tra Schema của Response khi request thành công,200 OK,VALID
+TC_FR07_02,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Valid] Status code là 200/201 khi truyền body hợp lệ,"Truyền id = 1, quantity = 2 -> Expect 200/201",200 OK,VALID
+TC_FR07_03,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là số 0 -> Lỗi (400 Bad Request),Truyền id = 0 -> Expect 400,400 Bad Request,VALID
+TC_FR07_04,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là số âm (-1) -> Lỗi,Truyền id = -1 -> Expect 400,400 Bad Request,VALID
+TC_FR07_05,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là số thập phân (1.5) -> Lỗi,Truyền id = 1.5 -> Expect 400,400 Bad Request,VALID
+TC_FR07_06,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id bị thiếu (missing) -> Lỗi,Không truyền thuộc tính id -> Expect 400,400 Bad Request,VALID
+TC_FR07_07,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là null -> Lỗi,Truyền id = null -> Expect 400,400 Bad Request,VALID
+TC_FR07_08,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là chuỗi ('1') -> Không hợp lệ hoặc ép kiểu,Truyền id dạng chuỗi -> Expect xử lý an toàn,200 OK / 400 Bad Request,INCOMPLETE
+TC_FR07_09,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id là chuỗi rỗng ('') -> Lỗi,"Truyền id = """" -> Expect 400",400 Bad Request,VALID
+TC_FR07_10,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - ID] id không tồn tại trong CSDL -> Lỗi 404,Truyền id = 999999 -> Expect 404/400,400 Bad Request / 404 Not Found,VALID
+TC_FR07_11,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Name] name hợp lệ (có dấu Tiếng Việt) -> Thành công,"Truyền name = ""Sản phẩm A"" -> Expect 200/201",200 OK,VALID
+TC_FR07_12,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Name] name quá dài (>255 ký tự) -> Lỗi 400,Truyền chuỗi name > 255 ký tự -> Expect 400,400 Bad Request,VALID
+TC_FR07_13,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Name] name bị thiếu (missing) -> Lỗi 400,Không truyền thuộc tính name -> Expect 400,400 Bad Request,VALID
+TC_FR07_14,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Name] name là null -> Lỗi 400,Truyền name = null -> Expect 400,400 Bad Request,VALID
+TC_FR07_15,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Name] name là chuỗi rỗng ('') -> Lỗi 400,"Truyền name = """" -> Expect 400",400 Bad Request,VALID
+TC_FR07_16,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price hợp lệ (số nguyên dương) -> Thành công,Truyền price = 100000 -> Expect 200/201,200 OK,VALID
+TC_FR07_17,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price là số 0 -> Lỗi,Truyền price = 0 -> Expect 400,400 Bad Request,VALID
+TC_FR07_18,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price là số âm (-1000) -> Lỗi,Truyền price = -1000 -> Expect 400,400 Bad Request,VALID
+TC_FR07_19,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price bị thiếu (missing) -> Lỗi 400,Không truyền thuộc tính price -> Expect 400,400 Bad Request,VALID
+TC_FR07_20,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price là null -> Lỗi 400,Truyền price = null -> Expect 400,400 Bad Request,VALID
+TC_FR07_21,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Price] price là chuỗi ('100000') -> Xử lý (ép kiểu hoặc lỗi),Truyền price dạng chuỗi -> Expect xử lý an toàn,200 OK / 400 Bad Request,INCOMPLETE
+TC_FR07_22,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity hợp lệ (>=1) -> Thành công,Truyền quantity >= 1 -> Expect 200/201,200 OK,VALID
+TC_FR07_23,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity là số 0 -> Lỗi,Truyền quantity = 0 -> Expect 400 (Tối thiểu 1),400 Bad Request,VALID
+TC_FR07_24,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity là số âm (-1) -> Lỗi,Truyền quantity = -1 -> Expect 400,400 Bad Request,VALID
+TC_FR07_25,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity là số thập phân (1.5) -> Lỗi,Truyền quantity = 1.5 -> Expect 400,400 Bad Request,VALID
+TC_FR07_26,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity bị thiếu (missing) -> Lỗi 400,Không truyền thuộc tính quantity -> Expect 400,400 Bad Request / 200 OK,INCOMPLETE
+TC_FR07_27,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Domain Partitions,AI-generated,[Domain - Quantity] quantity là null -> Lỗi 400,Truyền quantity = null -> Expect 400,400 Bad Request,VALID
+TC_FR07_28,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,State Transitions,AI-generated,[State] Thêm sản phẩm CHƯA CÓ trong giỏ,Thêm sản phẩm mới -> Tạo dòng mới trong giỏ,200 OK,VALID
+TC_FR07_29,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,State Transitions,AI-generated,[State] Thêm sản phẩm ĐÃ CÓ trong giỏ,Thêm sản phẩm trùng -> Cộng dồn số lượng,200 OK,VALID
+TC_FR07_30,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,State Transitions,AI-generated,[State] Tổng tiền được tính toán lại,Xác minh Tổng cộng thay đổi đúng sau khi thêm,200 OK,VALID
+TC_FR07_31,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,AI-generated,[Security-Auth] Không truyền Header Authorization,Gửi request không có token -> Expect 401,401 Unauthorized,VALID
+TC_FR07_32,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,AI-generated,[Security-Auth] Truyền Token không hợp lệ/hết hạn,Gửi request token sai -> Expect 401,401 Unauthorized,VALID
+TC_FR07_33,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,AI-generated,[Security-SQLi] SQL Injection ở id,"Truyền id = ""1 OR 1=1"" -> Không sập DB",400 Bad Request,VALID
+TC_FR07_34,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,AI-generated,[Security-XSS] XSS ở name,Truyền name = `<script>alert(1)</script>` -> Sanitize an toàn,200 OK,VALID
+TC_FR07_35,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,AI-generated,[Security-IDOR] Thêm tham số lạ user_id,Chèn user_id của người khác vào payload -> Server bỏ qua,200 OK,VALID
+TC_FR07_E1,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Business Logic,Human-extended (Người làm),[Business Logic] Mua vượt mức tồn kho (Out of stock),Truyền quantity = 999999 -> Expect HTTP 400.,400 Bad Request,VALID
+TC_FR07_E2,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,Human-extended (Người làm),[Security] Hack giá trị đơn hàng (Cố tình thay đổi price),"Cố tình truyền `price = 1` -> Expect 200, nhưng Backend vẫn phải tính tổng tiền dựa trên giá gốc trong CSDL.",200 OK / 400 Bad Request,VALID
+TC_FR07_E3,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,HTTP Protocol,Human-extended (Người làm),[Method] Gửi sai HTTP Method,Sử dụng GET hoặc PUT thay vì POST -> Expect HTTP 405 Method Not Allowed.,405 Method Not Allowed,VALID
+TC_FR07_E4,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,Security,Human-extended (Người làm),[Security / Race Condition] Spam request đồng thời,Dùng Script bắn 2 request `Add to Cart` cùng một sản phẩm cách nhau chỉ 10ms -> Expect số lượng được cộng dồn chính xác.,200 OK,VALID
+TC_FR07_E5,FR-07: Giỏ hàng (Shopping Cart),POST /api/cart,State Transitions,Human-extended (Người làm),[State] Thêm sản phẩm đang bị khóa (Inactive),Cố tình truyền `id` của một sản phẩm đã ngừng kinh doanh/bị ẩn -> Expect HTTP 400 / 403.,400 Bad Request / 403 Forbidden,VALID

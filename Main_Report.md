@@ -80,7 +80,7 @@
 | 18 | [Domain - Price] price là số âm (-1000) -> Lỗi | Truyền price = -1000 -> Expect 400 | VALID | Giá tiền không được âm, kiểm tra Validation của hệ thống. |
 | 19 | [Domain - Price] price bị thiếu (missing) -> Lỗi 400 | Không truyền thuộc tính price -> Expect 400 | VALID | Xác minh xem tham số price có bắt buộc theo Đặc tả hay không. |
 | 20 | [Domain - Price] price là null -> Lỗi 400 | Truyền price = null -> Expect 400 | VALID | Xử lý lỗi khi truyền null vào trường số. |
-| 21 | [Domain - Price] price là chuỗi ('100000') -> Xử lý (ép kiểu hoặc lỗi) | Truyền price dạng chuỗi -> Expect xử lý an toàn | VALID | Kiểm tra cơ chế tự động ép kiểu (Type Casting) của Framework Backend. |
+| 21 | [Domain - Price] price là chuỗi ('100000') -> Xử lý (ép kiểu hoặc lỗi) | Truyền price dạng chuỗi -> Expect xử lý an toàn | INCOMPLETE | Tương tự Test 8, cần xác định rõ hệ thống ép kiểu (trả về 200) hay báo lỗi (400) để thiết lập Script chính xác. |
 | 22 | [Domain - Quantity] quantity hợp lệ (>=1) -> Thành công | Truyền quantity >= 1 -> Expect 200/201 | VALID | Đảm bảo tính hợp lệ của số lượng hàng vật lý. |
 | 23 | [Domain - Quantity] quantity là số 0 -> Lỗi | Truyền quantity = 0 -> Expect 400 (Tối thiểu 1) | VALID | Nếu thêm 0 sản phẩm thì API phải từ chối. (Xóa thì dùng API khác). |
 | 24 | [Domain - Quantity] quantity là số âm (-1) -> Lỗi | Truyền quantity = -1 -> Expect 400 | VALID | Ngăn chặn lỗ hổng Logic (Thêm số âm để làm giảm tổng tiền thanh toán). |
