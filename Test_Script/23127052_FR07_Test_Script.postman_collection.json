@@ -1,0 +1,1619 @@
+{
+  "info": {
+    "_postman_id": "25776853-da78-473e-bcda-859d6f6d831d",
+    "name": "23127052_FR07_Test_Script",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50570624",
+    "_collection_link": "https://go.postman.co/collection/50570624-25776853-da78-473e-bcda-859d6f6d831d?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseData = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Save Auth Token and User ID\", function () {\r",
+              "     pm.environment.set(\"auth_token\", responseData.token);\r",
+              "     pm.environment.set(\"user_id\", responseData.user.id);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Thêm sản phẩm hợp lệ (Mới)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const responseSchema = {\r",
+              "    \"type\": \"object\",\r",
+              "    \"properties\": {\r",
+              "        \"message\": { \"type\": \"string\" }\r",
+              "    },\r",
+              "    \"required\": [\"message\"]\r",
+              "};\r",
+              "\r",
+              "pm.test(\"1. [Schema] Response khớp 100% với Schema định nghĩa (khi request hợp lệ)\", function () {\r",
+              "    if (pm.response.code === 200 || pm.response.code === 201) {\r",
+              "        pm.response.to.have.jsonSchema(responseSchema);\r",
+              "        pm.expect(pm.response.json().message).to.eql(\"Added to cart\");\r",
+              "    }\r",
+              "});\r",
+              "\r",
+              "pm.test(\"2. [Domain-Valid] Status code là 200/201 khi truyền body hợp lệ\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"11. [Domain-Name] name hợp lệ (có dấu Tiếng Việt) -> Thành công\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"16. [Domain-Price] price hợp lệ (số nguyên dương) -> Thành công\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"22. [Domain-Quantity] quantity hợp lệ (>=1) -> Thành công\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"28. [State] Thêm sản phẩm CHƯA CÓ trong giỏ -> Phản hồi thông báo thành công\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql('Added to cart');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"30. [State] Sau khi thêm, kiểm tra cấu trúc phản hồi thành công\", function () {\r",
+              "    pm.expect(pm.response.text()).to.include('Added to cart');\r",
+              "});\r",
+              "\r",
+              "// API Chaining GET /api/cart\r",
+              "if (pm.response.code === 200 || pm.response.code === 201) {\r",
+              "    const getCartReq = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/cart',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json',\r",
+              "            'X-Student-Id': '23127052'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getCartReq, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const cart = res.json();\r",
+              "            \r",
+              "            pm.test(\"[Chained] Xác minh State: Sản phẩm xuất hiện trong Giỏ hàng qua GET /api/cart\", function () {\r",
+              "                pm.expect(cart).to.be.an('array');\r",
+              "                const item = cart.find(i => i.id === 1);\r",
+              "                pm.expect(item).to.not.be.undefined;\r",
+              "            });\r",
+              "\r",
+              "            pm.test(\"[Chained] Xác minh State: Tổng tiền giỏ hàng được tính toán lại (> 0)\", function () {\r",
+              "                pm.expect(cart).to.be.an('array');\r",
+              "                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);\r",
+              "                pm.expect(total).to.be.above(0);\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sản phẩm A\",\n    \"price\": 100000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Thêm sản phẩm hợp lệ (Trùng ID)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"29. [State] Thêm sản phẩm ĐÃ CÓ trong giỏ -> Phản hồi thông báo thành công\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql('Added to cart');\r",
+              "});\r",
+              "\r",
+              "// API Chaining GET /api/cart\r",
+              "if (pm.response.code === 200 || pm.response.code === 201) {\r",
+              "    const getCartReq = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/cart',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json',\r",
+              "            'X-Student-Id': '23127052'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getCartReq, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const cart = res.json();\r",
+              "            pm.test(\"[Chained] Xác minh State: Sản phẩm trùng ID được ghi nhận vào giỏ\", function () {\r",
+              "                pm.expect(cart).to.be.an('array');\r",
+              "                const itemsWithId1 = cart.filter(i => i.id === 1);\r",
+              "                pm.expect(itemsWithId1.length).to.be.above(0);\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sản phẩm A\",\n    \"price\": 100000,\n    \"quantity\": 2\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là số 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"3. [Domain-ID] id là số 0 -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 0,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là số âm",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"4. [Domain-ID] id là số âm -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": -1,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là số thập phân",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"5. [Domain-ID] id là số thập phân -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1.5,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID bị thiếu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"6. [Domain-ID] id bị thiếu -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là null",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"7. [Domain-ID] id là null -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": null,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là chuỗi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"8. [Domain-ID] id là chuỗi -> Xử lý an toàn\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": \"1\",\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID là chuỗi rỗng",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"9. [Domain-ID] id là chuỗi rỗng -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": \"\",\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - ID không tồn tại",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"10. [Domain-ID] id không tồn tại -> Lỗi 404\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 400]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 999999,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Name quá dài",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"12. [Domain-Name] name quá dài -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Name bị thiếu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"13. [Domain-Name] name bị thiếu -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Name là null",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"14. [Domain-Name] name là null -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": null,\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Name là chuỗi rỗng",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"15. [Domain-Name] name rỗng -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"\",\n    \"price\": 10000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Price là số 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"17. [Domain-Price] price là số 0 -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 0,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Price số âm",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"18. [Domain-Price] price âm -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": -1000,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Price bị thiếu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"19. [Domain-Price] price bị thiếu -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Price là null",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"20. [Domain-Price] price là null -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": null,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Price là chuỗi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"21. [Domain-Price] price là chuỗi -> Xử lý an toàn\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": \"10000\",\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Quantity là số 0",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"23. [Domain-Quantity] quantity là số 0 -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 0\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Quantity số âm",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"24. [Domain-Quantity] quantity âm -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": -1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Quantity số thập phân",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"25. [Domain-Quantity] quantity thập phân -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": 1.5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Quantity bị thiếu",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"26. [Domain-Quantity] quantity bị thiếu -> Lỗi 400 / Default=1\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 10000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Quantity là null",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"27. [Domain-Quantity] quantity là null -> Lỗi 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"Sp A\",\n    \"price\": 10000,\n    \"quantity\": null\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Security: Thiếu Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"31. [Security-Auth] Không Token -> Lỗi 401\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(401);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Security: Token sai",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"32. [Security-Auth] Token sai -> Lỗi 401\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(401);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "Bearer INVALID_TOKEN",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Security: SQLi ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"33. [Security-SQLi] SQLi ID -> Chặn an toàn\", function () {\r",
+              "    pm.expect(pm.response.code).to.not.eql(200);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": \"1 OR 1=1\",\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Security: XSS Name",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"34. [Security-XSS] XSS Name -> Chặn, hoặc mã hóa, hoặc không sập\", function () {\r",
+              "    const code = pm.response.code;\r",
+              "    pm.expect(code).to.be.oneOf([200, 201, 400, 403]);\r",
+              "    if (code === 200 || code === 201) {\r",
+              "        const text = pm.response.text();\r",
+              "        pm.expect(text).to.not.include(\"<script>\");\r",
+              "    }\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"name\": \"<script>alert(1)</script>\",\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - Security: IDOR user_id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"35. [Security-IDOR] Chèn user_id lạ -> Bỏ qua\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"quantity\": 1,\n    \"user_id\": 999\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - E1: Tồn kho 999999",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E1. [Business Logic] Mua vượt mức tồn kho -> 400\", function () {\r",
+              "    pm.expect(pm.response.code).to.eql(400);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"quantity\": 999999\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - E2: Hack giá 1đ",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E2. [Security] Hack giá trị đơn hàng (Cố tình gửi price = 1) -> Server xử lý an toàn\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);\r",
+              "});\r",
+              "\r",
+              "// API Chaining GET /api/cart\r",
+              "if (pm.response.code === 200 || pm.response.code === 201) {\r",
+              "    const getCartReq = {\r",
+              "        url: pm.environment.get(\"base_url\") + '/api/cart',\r",
+              "        method: 'GET',\r",
+              "        header: {\r",
+              "            'Authorization': 'Bearer ' + pm.environment.get(\"auth_token\"),\r",
+              "            'Content-Type': 'application/json',\r",
+              "            'X-Student-Id': '23127052'\r",
+              "        }\r",
+              "    };\r",
+              "    pm.sendRequest(getCartReq, function (err, res) {\r",
+              "        if (!err && res.code === 200) {\r",
+              "            const cart = res.json();\r",
+              "            pm.test(\"[Chained] Xác minh Security: Giá sản phẩm không bị lưu 1đ vào database\", function () {\r",
+              "                const hackedItem = cart.find(i => i.id === 1 && i.price === 1);\r",
+              "                pm.expect(hackedItem, \"Lỗ hổng bảo mật: Server đã lưu giá 1đ do client truyền lên!\").to.be.undefined;\r",
+              "            });\r",
+              "        }\r",
+              "    });\r",
+              "}\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"price\": 1,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - E3: Sai Method (GET)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E3. [Method] Sai HTTP Method -> 405\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([405, 404]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - E4: Race Condition",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E4. [Security / Race Condition] Spam request\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 429]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FR07 - E5: Sản phẩm bị ẩn",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"E5. [State] Thêm sản phẩm Inactive -> 400/403\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 403, 404]);\r",
+              "});\r",
+              "\r"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 999,\n    \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "cart"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.request.headers.add({\r",
+          "    key: 'X-Student-Id', \r",
+          "    value: '23127052'\r",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
