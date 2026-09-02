@@ -148,5 +148,24 @@ Chi tiết phần kết quả của Test script của các FR nằm trong folder
 
 ## 3. Bug Found During Execution
 
+Tổng hợp danh sách các lỗi phát hiện được trong quá trình thực thi kiểm thử tự động với Newman. Chi tiết các bước tái hiện và phân tích chuyên sâu được trình bày tại [Bug_Report.md](Bug_Report.md).
+
+| Bug ID | Feature | Endpoint | Tóm tắt lỗi phát hiện | Test Case liên quan | Severity |
+| :---: | :---: | :--- | :--- | :--- | :---: |
+| **#1** | FR-04 | `PUT /api/users/me` | Leo thang đặc quyền (Privilege Escalation) qua Mass Assignment gán role admin | Test 25 | **Critical** |
+| **#2** | FR-04 | `PUT /api/users/me` | Lỗ hổng Stored XSS trong Profile (Name & Address không sanitize thẻ script) | Test 28, 29 | **High** |
+| **#3** | FR-04 | `PUT /api/users/me` | Lỗ hổng IDOR cho phép ghi đè/xung đột ID người dùng | Test 30 | **High** |
+| **#4** | FR-04 | `PUT /api/users/me` | Crash 500 Internal Server Error khi gửi Content-Type dạng XML | Test 31 | **Medium** |
+| **#5** | FR-04 | `PUT /api/users/me` | Thiếu validation định dạng Số điện thoại (chấp nhận rỗng, chữ, null, sai số) | Test 10–16, 27, E4 | **Medium** |
+| **#6** | FR-04 | `PUT /api/users/me` | Thiếu validation trường Name (chấp nhận rỗng, khoảng trắng, vượt quá 255 ký tự) | Test 17–20 | **Medium** |
+| **#7** | FR-04 | `PUT /api/users/me` | Trả về sai status code khi token lỗi (403 Forbidden thay vì 401 Unauthorized) | Test 23 | **Low** |
+| **#8** | FR-07 | `POST /api/cart` | Thao túng giá tiền từ Client (Client-Side Price Tampering lưu giá 1đ) | Test E2 | **Critical** |
+| **#9** | FR-07 | `POST /api/cart` | Cho phép thêm sản phẩm với số lượng không hợp lệ (số âm, 0, thập phân, null) | Test 23–25, 27 | **High** |
+| **#10** | FR-07 | `POST /api/cart` | Cho phép thêm sản phẩm với giá tiền âm (`price = -1000`) | Test 18 | **High** |
+| **#11** | FR-07 | `POST /api/cart` | Vi phạm toàn vẹn tham chiếu ID (chấp nhận ID rác, không tồn tại, số âm) | Test 3–7, 9, 10 | **High** |
+| **#12** | FR-07 | `POST /api/cart` | Thiếu giới hạn trần số lượng mua (cho phép đặt số lượng phi lý 999,999) | Test E1 | **Medium** |
+| **#13** | FR-07 | `POST /api/cart` | Chấp nhận chuỗi SQL Injection ở trường ID (`1 OR 1=1`) không ném lỗi 400 | Test 33 | **Medium** |
+| **#14** | FR-07 | `POST /api/cart` | Thiếu validation độ dài tối đa cho trường Name sản phẩm (>255 ký tự) | Test 12 | **Low** |
+
 ## 4. Postman Features được sử dụng trong bài 
 

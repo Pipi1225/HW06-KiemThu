@@ -108,11 +108,14 @@ Sau đó bạn hãy đổ 35 test case đó vào bảng ở phần FR-07 trong @
 
 ### Artifact 8: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 11:23 02/09/2026
 - **Prompt:**
+```text
+Tôi đã tổng hợp và phân tích các bug tìm được trong quá trình chạy kiểm thử tự động tại @[d:\DaiHoc\KiemThuPM\HW06\Bug_Report.md]. Bạn hãy đọc nội dung file này và parse lại thành một file template Github Issues hoàn chỉnh (bao gồm Tiêu đề, Mô tả, Steps to Reproduce, Expected vs Actual và đường dẫn Screenshot tương ứng) để tôi tiện copy-paste đưa lên GitHub Issues.
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã đọc nội dung chi tiết của 14 bugs từ file `Bug_Report.md` do sinh viên tổng hợp, phân tích cấu trúc và chuyển đổi thành file `Github_Issues_Content.md` với định dạng chuẩn Markdown của GitHub Issues (gồm Tiêu đề chuẩn hóa theo module và severity, kịch bản tái hiện chi tiết, kết quả mong muốn/thực tế và link ảnh bằng chứng) giúp sinh viên dễ dàng đưa lên hệ thống theo dõi lỗi.
 
 ### Artifact 9: 
 **1. Prompt + Tool**
