@@ -5,9 +5,68 @@
 
 ---
 
-## AI Agent Skill Flow Diagram
+## AI Agent Skill
+
+### 1. AI Agent Skill Flow Diagram
 
 ![Screenshot Agent Skill Flow Diagram](images/flow_diagram_agent_skill.jpg)
+
+### 2. Pseudocode Quy Trình Hoạt Động (Agent Skill Workflow Pseudocode)
+
+```text
+ALGORITHM PostmanTestGeneratorAgent(api_spec, security_guidelines, target_min_tests = 35)
+    INPUT:
+        api_spec: OpenAPI spec hoặc Markdown đặc tả (Endpoint, Method, Request Body, Responses)
+        security_guidelines: Danh sách vector kiểm thử bảo mật chuẩn (SEC-01 đến SEC-07)
+        target_min_tests: Ngưỡng số lượng test case tối thiểu (Mặc định = 35)
+    OUTPUT:
+        postman_script: Mã kịch bản JavaScript chạy trong tab Tests của Postman
+
+    // BƯỚC 1: Tiếp nhận và phân tích cú pháp đặc tả API
+    endpoint, method   ← ExtractEndpointAndMethod(api_spec)
+    request_schema     ← ExtractRequestBodySchema(api_spec)
+    params             ← ExtractPathAndQueryParams(api_spec)
+    expected_responses ← ExtractExpectedResponses(api_spec)
+    test_suite         ← EmptyList()
+
+    // BƯỚC 2: Phân bổ hạn ngạch (Quota Allocation) cho 4 khía cạnh
+    quota_schema   ← Max(4,  Round(target_min_tests * 0.10))   // ~10% (>= 4 TCs)
+    quota_domain   ← Max(18, Round(target_min_tests * 0.50))   // ~50% (>= 18 TCs)
+    quota_state    ← Max(6,  Round(target_min_tests * 0.15))   // ~15% (>= 6 TCs)
+    quota_security ← Max(7,  Round(target_min_tests * 0.25))   // ~25% (>= 7 TCs)
+
+    // BƯỚC 3: Sinh test case theo từng chiều chuyên môn
+    // 3.1. Schema Validation (tv4 / JSON Schema, Object Type, Required Fields)
+    test_suite.Append(GenerateSchemaTests(expected_responses.schema, count=quota_schema))
+
+    // 3.2. Domain Partitions (Valid, Boundary min/max, Empty, Whitespace, Null, Missing, Type Mismatch)
+    FOREACH field IN request_schema.fields DO:
+        test_suite.Append(GenerateDomainTests(field, request_schema))
+    END FOREACH
+
+    // 3.3. State Transitions (Xác minh tính bền vững dữ liệu bằng API Chaining qua pm.sendRequest)
+    IF method IN ["POST", "PUT", "DELETE"] THEN:
+        read_endpoint ← ResolveReadEndpoint(endpoint)
+        test_suite.Append(GenerateChainedStateTests(read_endpoint, headers={"X-Student-Id": "23127052"}))
+    END IF
+
+    // 3.4. Security Checks (SEC-01..07: Auth token, SQLi, XSS, Role Escalation, IDOR, XML injection)
+    test_suite.Append(GenerateSecurityTests(security_guidelines, count=quota_security))
+
+    // BƯỚC 4: Quality Gate & Vòng lặp tự hoàn thiện
+    WHILE Length(test_suite) < target_min_tests DO:
+        corner_case ← SynthesizeEdgeCase(request_schema, endpoint)
+        test_suite.Append(corner_case)
+    END WHILE
+
+    ValidateJavascriptSyntax(test_suite)
+    EnsureRequiredHeaders(test_suite, header_name="X-Student-Id", student_id="23127052")
+
+    // BƯỚC 5: Đóng gói và định dạng mã nguồn Postman
+    postman_script ← FormatAsCategorizedJavascript(test_suite)
+    RETURN postman_script
+END ALGORITHM
+```
 
 ## 1. AI-Generated Test Script
 ### 1.1. FR-04: Quản lý hồ sơ cá nhân
