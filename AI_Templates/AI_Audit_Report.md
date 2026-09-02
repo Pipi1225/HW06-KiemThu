@@ -74,27 +74,37 @@ Bạn hãy paste 37 test cases bạn vừa tạo vào bảng FR-04 ở @[d:\DaiH
 
 ### Artifact 5: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 16:45 01/09/2026
 - **Prompt:**
+```text
+Ở chức năng FR-04 (PUT /api/users/me), nếu như API cập nhật thông tin thành công mà không trả về object user trong response body thì làm sao để dùng API Chaining trong Postman gọi tiếp endpoint GET /api/users/me nhằm verify lại dữ liệu đã lưu chuẩn xác chưa trực tiếp ngay trong script?.
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã hướng dẫn kỹ thuật API Chaining trong Postman: sử dụng Pre-request/Tests Script của request `PUT /api/users/me` để lưu các trường dữ liệu cập nhật (`updated_name`, `updated_phone`, `updated_address`) vào Postman Environment Variables. Sau đó thiết lập gọi tiếp request `GET /api/users/me` (thông qua Collection Runner hoặc hàm `postman.setNextRequest()`), tại đây viết assertion script đối chiếu dữ liệu trả về từ API GET với các biến môi trường đã lưu nhằm xác minh dữ liệu thực sự đã được cập nhật thành công vào hệ thống.
 
 ### Artifact 6: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro (High)
+- **Timestamp:** 01:36 02/09/2026
 - **Prompt:**
+```text
+Bạn hãy generate cho tôi 35 test cases cho FR-07: Giỏ hàng (Shopping Cart). Sử dụng endpoint là POST /api/cart
+Toàn bộ context cần thiết đã nằm sẵn trong @[d:\DaiHoc\KiemThuPM\HW06\api_constraint.md] và @[d:\DaiHoc\KiemThuPM\HW06\api_specification.md]
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã áp dụng skill postman-test-generator để phân tích và sinh ra 35 test cases bằng JavaScript (pm.test) cho API `POST /api/cart` (FR-07), bao phủ đầy đủ Domain Partitions, State Transitions, Security và Schema Validation.
 
 ### Artifact 7: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro (High)
+- **Timestamp:** 01:39 02/09/2026
 - **Prompt:**
+```text
+Sau đó bạn hãy đổ 35 test case đó vào bảng ở phần FR-07 trong @[Main_Report.md], để trống phần Status và Reasoning để tôi tự điền
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã định dạng 35 test cases của FR-07 và dán vào bảng Markdown tại file `Main_Report.md`, để trống cột Status và Reasoning theo yêu cầu.
 
 ### Artifact 8: 
 **1. Prompt + Tool**

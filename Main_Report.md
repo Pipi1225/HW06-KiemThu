@@ -60,7 +60,41 @@
 
 | No. | Tựa đề | Nội dung | Status | Reasoning |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| 1 | [Schema] Response khớp 100% với Schema định nghĩa | Kiểm tra Schema của Response khi request thành công | | |
+| 2 | [Domain-Valid] Status code là 200/201 khi truyền body hợp lệ | Truyền id = 1, quantity = 2 -> Expect 200/201 | | |
+| 3 | [Domain-ID] id là số 0 -> Lỗi (400 Bad Request) | Truyền id = 0 -> Expect 400 | | |
+| 4 | [Domain-ID] id là số âm (-1) -> Lỗi | Truyền id = -1 -> Expect 400 | | |
+| 5 | [Domain-ID] id là số thập phân (1.5) -> Lỗi | Truyền id = 1.5 -> Expect 400 | | |
+| 6 | [Domain-ID] id bị thiếu (missing) -> Lỗi | Không truyền thuộc tính id -> Expect 400 | | |
+| 7 | [Domain-ID] id là null -> Lỗi | Truyền id = null -> Expect 400 | | |
+| 8 | [Domain-ID] id là chuỗi ('1') -> Không hợp lệ hoặc ép kiểu | Truyền id dạng chuỗi -> Expect xử lý an toàn | | |
+| 9 | [Domain-ID] id là chuỗi rỗng ('') -> Lỗi | Truyền id = "" -> Expect 400 | | |
+| 10 | [Domain-ID] id không tồn tại trong CSDL -> Lỗi 404 | Truyền id = 999999 -> Expect 404/400 | | |
+| 11 | [Domain-Name] name hợp lệ (có dấu Tiếng Việt) -> Thành công | Truyền name = "Sản phẩm A" -> Expect 200/201 | | |
+| 12 | [Domain-Name] name quá dài (>255 ký tự) -> Lỗi 400 | Truyền chuỗi name > 255 ký tự -> Expect 400 | | |
+| 13 | [Domain-Name] name bị thiếu (missing) -> Lỗi 400 | Không truyền thuộc tính name -> Expect 400 | | |
+| 14 | [Domain-Name] name là null -> Lỗi 400 | Truyền name = null -> Expect 400 | | |
+| 15 | [Domain-Name] name là chuỗi rỗng ('') -> Lỗi 400 | Truyền name = "" -> Expect 400 | | |
+| 16 | [Domain-Price] price hợp lệ (số nguyên dương) -> Thành công | Truyền price = 100000 -> Expect 200/201 | | |
+| 17 | [Domain-Price] price là số 0 -> Lỗi | Truyền price = 0 -> Expect 400 | | |
+| 18 | [Domain-Price] price là số âm (-1000) -> Lỗi | Truyền price = -1000 -> Expect 400 | | |
+| 19 | [Domain-Price] price bị thiếu (missing) -> Lỗi 400 | Không truyền thuộc tính price -> Expect 400 | | |
+| 20 | [Domain-Price] price là null -> Lỗi 400 | Truyền price = null -> Expect 400 | | |
+| 21 | [Domain-Price] price là chuỗi ('100000') -> Xử lý (ép kiểu hoặc lỗi) | Truyền price dạng chuỗi -> Expect xử lý an toàn | | |
+| 22 | [Domain-Quantity] quantity hợp lệ (>=1) -> Thành công | Truyền quantity >= 1 -> Expect 200/201 | | |
+| 23 | [Domain-Quantity] quantity là số 0 -> Lỗi | Truyền quantity = 0 -> Expect 400 (Tối thiểu 1) | | |
+| 24 | [Domain-Quantity] quantity là số âm (-1) -> Lỗi | Truyền quantity = -1 -> Expect 400 | | |
+| 25 | [Domain-Quantity] quantity là số thập phân (1.5) -> Lỗi | Truyền quantity = 1.5 -> Expect 400 | | |
+| 26 | [Domain-Quantity] quantity bị thiếu (missing) -> Lỗi 400 | Không truyền thuộc tính quantity -> Expect 400 | | |
+| 27 | [Domain-Quantity] quantity là null -> Lỗi 400 | Truyền quantity = null -> Expect 400 | | |
+| 28 | [State] Thêm sản phẩm CHƯA CÓ trong giỏ | Thêm sản phẩm mới -> Tạo dòng mới trong giỏ | | |
+| 29 | [State] Thêm sản phẩm ĐÃ CÓ trong giỏ | Thêm sản phẩm trùng -> Cộng dồn số lượng | | |
+| 30 | [State] Tổng tiền được tính toán lại | Xác minh Tổng cộng thay đổi đúng sau khi thêm | | |
+| 31 | [Security-Auth] Không truyền Header Authorization | Gửi request không có token -> Expect 401 | | |
+| 32 | [Security-Auth] Truyền Token không hợp lệ/hết hạn | Gửi request token sai -> Expect 401 | | |
+| 33 | [Security-SQLi] SQL Injection ở id | Truyền id = "1 OR 1=1" -> Không sập DB | | |
+| 34 | [Security-XSS] XSS ở name | Truyền name = `\<script\>alert(1)\</script\>` -> Sanitize an toàn | | |
+| 35 | [Security-IDOR] Thêm tham số lạ user_id | Chèn user_id của người khác vào payload -> Server bỏ qua | | |
 
 ### 1.3. FR-14: Quản lý Danh mục (Category CRUD)
 *   **API Endpoint sử dụng:** POST /api/categories
