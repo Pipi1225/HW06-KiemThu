@@ -119,19 +119,57 @@ Tôi đã tổng hợp và phân tích các bug tìm được trong quá trình 
 
 ### Artifact 9: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.7 Flash
+- **Timestamp:** 22:40 02/09/2026
 - **Prompt:**
+```text
+Bạn hãy generate cho tôi test cases của Postman cho FR-14: Quản lý Danh mục (Category CRUD), API sử dụng là POST /api/categories (Phần extended case trong bài là sẽ DO TÔI tự làm)
 
-**2. AI Output:**
+Các context cần thiết đã nằm trong @[api_constraint.md] và @[api_specification.md] 
+
+Có một số điểm lưu ý
+Nếu dùng POST /api/categories, response trả về chỉ có:
+{
+    "message": "Category created",
+    "id": 5
+}
+Nên cần phải dùng GET /api/categories
+[
+    {
+        "id": 1,
+        "name": "Điện thoại"
+    },
+    {
+        "id": 2,
+        "name": "Laptop"
+    },
+    {
+        "id": 3,
+        "name": "Phụ kiện"
+    },
+    {
+        "id": 4,
+        "name": "new_category"
+    },
+    {
+        "id": 5,
+        "name": "new_category"
+    }
+]
+```
+
+**2. AI Output:** Đã phân tích đặc tả API và các ràng buộc nghiệp vụ của FR-14 (`POST /api/categories`), áp dụng skill postman-test-generator để thiết kế và sinh 35 test cases chi tiết bao phủ toàn diện 4 mảng: Schema Validation, Domain Partitions, State Transitions (sử dụng API Chaining gọi `GET /api/categories` để xác minh dữ liệu thực tế trong danh sách), và Security Checks (SEC-01 đến SEC-07). Đồng thời tạo file mã nguồn JavaScript `Test_Script/FR14_Category.js`.
 
 ### Artifact 10: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.7 Flash
+- **Timestamp:** 22:42 02/09/2026
 - **Prompt:**
+```text
+Bạn hãy paste hết các test case đó vào @[Main_Report.md] , nhớ để trống trường reasoning và status để tôi tự làm
+```
 
-**2. AI Output:**
+**2. AI Output:** Đã cập nhật toàn bộ 35 test cases của FR-14 (`POST /api/categories`) vào bảng kiểm thử tại mục 1.3 trong file `Main_Report.md`, đồng thời để trống các cột Status và Reasoning theo yêu cầu để sinh viên tự thực hiện đánh giá audit.
 
 ### Artifact 11: 
 **1. Prompt + Tool**

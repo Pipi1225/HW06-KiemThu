@@ -161,7 +161,41 @@ END ALGORITHM
 
 | No. | Tựa đề | Nội dung | Status | Reasoning |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| 1 | [Schema] Response đúng định dạng JSON Object | Kiểm tra phản hồi trả về từ API phải là một JSON Object hợp lệ khi tạo thành công (HTTP 200/201). | | |
+| 2 | [Schema] Response chứa đúng các trường bắt buộc (`message`, `id`) | Kiểm tra response có thuộc tính `message` ("Category created") và `id` kiểu số nguyên dương. | | |
+| 3 | [Schema] Response không chứa các trường thừa không xác định | Kiểm tra response chỉ chứa chính xác 2 trường `message` và `id`, không rò rỉ dữ liệu nội bộ. | | |
+| 4 | [Schema] Validate toàn bộ response với JSON Schema (`tv4`/`ajv`) | Dùng thư viện schema validation của Postman để đối chiếu cấu trúc JSON response 100%. | | |
+| 5 | [Domain - Valid] Tạo danh mục với tên tiếng Việt có dấu | Body `{"name": "Đồng hồ thông minh"}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 6 | [Domain - Valid] Tạo danh mục với tên tiếng Anh không dấu | Body `{"name": "Smart Watch"}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 7 | [Domain - Valid] Tạo danh mục với tên chứa chữ số | Body `{"name": "iPhone 15 Series"}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 8 | [Domain - Valid] Tên chứa ký tự đặc biệt thông dụng (`&`, `-`, `/`) | Body `{"name": "Âm thanh & Phụ kiện"}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 9 | [Domain - Valid] Tên đạt độ dài tối thiểu (1 ký tự) | Body `{"name": "A"}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 10 | [Domain - Valid] Tên đạt độ dài tối đa hợp lệ (255 ký tự) | Body `{"name": "a".repeat(255)}` -> Kỳ vọng HTTP 200/201 OK. | | |
+| 11 | [Domain - Valid] Tên chứa khoảng trắng ở đầu và cuối | Body `{"name": "  Máy tính bảng  "}` -> Kỳ vọng HTTP 200/201 OK, hệ thống tự động trim. | | |
+| 12 | [Domain - Invalid] Tên danh mục là chuỗi rỗng (`""`) | Body `{"name": ""}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 13 | [Domain - Invalid] Tên danh mục chỉ chứa toàn khoảng trắng (`"   "`) | Body `{"name": "   "}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 14 | [Domain - Invalid] Thiếu trường `name` trong request body | Body `{}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 15 | [Domain - Invalid] Trường `name` có giá trị `null` | Body `{"name": null}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 16 | [Domain - Invalid] Trường `name` có kiểu dữ liệu số nguyên (12345) | Body `{"name": 12345}` -> Xử lý an toàn (HTTP 400 hoặc ép kiểu chuỗi). | | |
+| 17 | [Domain - Invalid] Trường `name` có kiểu dữ liệu boolean (`true`) | Body `{"name": true}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 18 | [Domain - Invalid] Trường `name` có kiểu dữ liệu mảng (`[]`) | Body `{"name": ["Thời trang"]}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 19 | [Domain - Invalid] Trường `name` có kiểu dữ liệu object (`{}`) | Body `{"name": {"sub": "con"}}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 20 | [Domain - Invalid] Tên danh mục vượt quá độ dài tối đa (256 ký tự) | Body `{"name": "a".repeat(256)}` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 21 | [Domain - Edge] Request body hoàn toàn rỗng (Empty payload) | Raw body `""` -> Kỳ vọng HTTP 400 Bad Request. | | |
+| 22 | [Domain - Edge] Gửi kèm trường không xác định ngoài `name` | Body `{"name": "Gia dụng", "extra_field": "test"}` -> Xử lý an toàn (bỏ qua hoặc 400). | | |
+| 23 | [State] POST response trả về `id` mới hợp lệ (> 0) | Xác nhận `id` trả về là số nguyên dương và lưu vào biến môi trường `latest_created_category_id`. | | |
+| 24 | [State - Chained] Gọi `GET /api/categories` trả về HTTP 200 OK | Gửi request `GET /api/categories` qua `pm.sendRequest` để đọc danh sách danh mục hiện tại. | | |
+| 25 | [State - Chained] Danh mục vừa tạo xuất hiện trong `GET /api/categories` | Tìm kiếm trong mảng danh mục có phần tử thỏa mãn `item.id === createdId`. | | |
+| 26 | [State - Chained] Tên danh mục trong CSDL khớp với `name` đã gửi | Đối chiếu `foundCategory.name` trả về từ GET với `reqBody.name` gửi lên trong POST. | | |
+| 27 | [State - Chained] Mọi danh mục trong danh sách đều có cấu trúc `{id, name}` | Duyệt qua mảng kết quả của GET và kiểm tra từng item đều có đầy đủ `id` và `name`. | | |
+| 28 | [State] Xử lý khi tạo danh mục trùng tên đã tồn tại | Gửi tên trùng với danh mục đã có trong hệ thống -> Kiểm tra phản hồi (200/201/409). | | |
+| 29 | [Security - SEC-02] Không gửi Authorization Header -> Bị từ chối 401 | Gửi request không có token -> Kỳ vọng HTTP 401 Unauthorized. | | |
+| 30 | [Security - SEC-02] Gửi Token không hợp lệ hoặc hết hạn -> Bị từ chối 401 | Gửi `Authorization: Bearer INVALID_TOKEN` -> Kỳ vọng HTTP 401 Unauthorized. | | |
+| 31 | [Security - SEC-03] Kiểm tra phân quyền Admin: User thường không được tạo danh mục -> Bị từ chối 403 | FR-12: Chỉ role Admin mới được tạo danh mục. Dùng token user thường (`test@eshop.com`) -> Kỳ vọng HTTP 403. | | |
+| 32 | [Security - SEC-05 / SQLi] Tấn công SQL Injection vào trường `name` | Payload `{"name": "' OR 1=1 --"}` hoặc `DROP TABLE` -> Kỳ vọng không sập 500 DB. | | |
+| 33 | [Security - SEC-04 / XSS] Tấn công Stored XSS vào trường `name` | Payload `{"name": "<script>alert('XSS')</script>"}` -> Không crash 500, sanitize an toàn khi đọc lại. | | |
+| 34 | [Security - IDOR / Tampering] Client tự ý chỉ định trường `id` trong body | Body `{"name": "Test", "id": 9999}` -> Server tự sinh ID, không cho phép ghi đè ID theo ý client. | | |
+| 35 | [Security - Content-Type] Gửi payload dạng XML / Text thay vì JSON | Đặt header `Content-Type: application/xml` -> Kỳ vọng HTTP 400 hoặc 415 Unsupported Media Type. | | |
 
 ## 2. Extend Test Script
 ### 2.1. FR-04: Quản lý hồ sơ cá nhân
@@ -174,6 +208,13 @@ END ALGORITHM
 | E4 | [Format] Số điện thoại chứa mã quốc gia | Truyền SĐT dạng `+84912345678` thay vì `09...` -> Expect HTTP 400. | Đặc tả ghi rõ số điện thoại nhập phải bắt đầu bằng số 0, kịch bản cũ chưa bao phủ case có dấu `+`. |
 | E5 | [Method] Gửi sai HTTP Method | Gửi request update bằng phương thức `POST` thay vì `PUT` -> Expect HTTP 405 Method Not Allowed. | Test cases do AI sinh ra chỉ gắn với method PUT, cần mở rộng thêm qua bằng method POST để phủ tốt hơn nữa. |
 
+#### Lý do AI bỏ sót:
+- Prompt chỉ cung cấp danh sách các trường có trong schema JSON, không đề cập đến giới hạn cấu hình web server (như body limit) và không yêu cầu kiểm tra trường lạ ngoài schema (`is_vip`), nên AI chỉ sinh test bám sát các trường được khai báo.
+- AI tập trung vào logic controller của method PUT mà bỏ qua tầng định tuyến mạng (gọi sai method bị 405). Ngoài ra, AI xem mọi văn bản đều là chuỗi ký tự nên bỏ sót kiểm tra mã hóa ký tự đặc biệt.
+- API thực tế chỉ trả về `{"message": "Profile updated"}` thay vì toàn bộ dữ liệu người dùng, phản hồi tối giản khiến AI khó nhận diện các nguy cơ quá tải payload hoặc định dạng SĐT quốc tế.
+
+---
+
 ### 2.2. FR-07: Giỏ hàng (Shopping Cart)
 
 | No. | Tựa đề | Nội dung / Kịch bản test | Reasoning |
@@ -183,6 +224,13 @@ END ALGORITHM
 | E3 | [Method] Gửi sai HTTP Method | Sử dụng GET hoặc PUT thay vì POST -> Expect HTTP 405 Method Not Allowed. | API Test cần bao phủ cả các trường hợp request bị chặn ngay tại tầng Router. |
 | E4 | [Security / Race Condition] Spam request đồng thời | Dùng Script bắn 2 request `Add to Cart` cùng một sản phẩm cách nhau chỉ 10ms -> Expect số lượng được cộng dồn chính xác. | Kịch bản chuyên sâu kiểm tra cơ chế khóa (Database Lock) của Server, ngăn lỗi Race Condition. |
 | E5 | [State] Thêm sản phẩm đang bị khóa (Inactive) | Cố tình truyền `id` của một sản phẩm đã ngừng kinh doanh/bị ẩn -> Expect HTTP 400 / 403. | AI thường dựa trên cấu trúc dữ liệu mà bỏ qua các trạng thái (State) theo vòng đời của sản phẩm trong thực tế. |
+
+#### Lý do AI bỏ sót:
+- Prompt chỉ đưa schema độc lập của endpoint giỏ hàng mà không kèm bảng sản phẩm (giá gốc, tồn kho, trạng thái bán). Do schema mẫu có sẵn trường `price`, AI coi `price` là input hợp lệ thay vì nhận ra đây là lỗi thiết kế logic.
+- AI chỉ kiểm thử tĩnh theo từng trường riêng lẻ, thiếu khả năng hình dung các tình huống chạy đồng thời (race condition) hoặc ràng buộc thực tế ngoài đời thực (không thể mua vượt tồn kho).
+- Hành vi của API giỏ hàng phụ thuộc vào trạng thái của sản phẩm ở module khác (sản phẩm còn bán hay đã ẩn). AI kiểm thử black-box đơn lẻ trên một endpoint nên không bao quát được các trạng thái liên kết này.
+
+---
 
 ### 2.3. FR-14: Quản lý Danh mục (Category CRUD)
 
@@ -205,7 +253,7 @@ Chi tiết phần kết quả của Test script của các FR nằm trong folder
 ![Screenshot Postman FR-14](images/fr14-postman.jpg)
 ![Screenshot Newman FR-14](images/fr14-newman.jpg)
 
-## 3. Bug Found During Execution
+## 4. Bug Found During Execution
 
 Tổng hợp danh sách các lỗi phát hiện được trong quá trình thực thi kiểm thử tự động với Newman. Chi tiết các bước tái hiện và phân tích chuyên sâu được trình bày tại [Bug_Report.md](Bug_Report.md).
 
