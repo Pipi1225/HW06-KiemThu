@@ -217,7 +217,8 @@ if (pm.response.code === 200) {
         method: 'GET',
         header: {
             'Authorization': 'Bearer ' + pm.environment.get("auth_token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Student-Id': '23127052'
         }
     };
     pm.sendRequest(getRequest, function (err, res) {
