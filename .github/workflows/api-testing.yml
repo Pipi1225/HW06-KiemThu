@@ -21,31 +21,36 @@ jobs:
         with:
           node-version: 20
 
-      - name: 3. Clone and Start SUT (EShop Backend)
+      - name: 3. Clone and Start SUT Backend
         run: |
           echo "Cloning EShop SUT repository..."
           git clone https://github.com/ttbhanh/eshop-sut.git sut
           cd sut/backend
           npm install
-          echo "Starting SUT backend in background..."
-          node server.js &
+          echo "Starting SUT backend with nohup..."
+          nohup node server.js > /tmp/sut_server.log 2>&1 &
           cd ../..
+          echo "Waiting for SUT server to be healthy on port 3000..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:3000/api/categories > /dev/null 2>&1; then
+              echo "SUT Server is ONLINE and healthy (attempt $i)!"
+              break
+            fi
+            echo "Waiting for backend server to start... ($i/30)"
+            sleep 1
+          done
+          echo "--- SUT Server Startup Logs ---"
+          cat /tmp/sut_server.log || true
 
-      - name: 4. Wait for SUT to be ready (Port 3000)
-        run: |
-          echo "Waiting for SUT server to be healthy on http://localhost:3000..."
-          npx wait-on http://localhost:3000 -t 60000 --interval 2000
-          curl -s http://localhost:3000/api/categories || echo "Server online!"
-
-      - name: 5. Install Newman & HTML Extra Reporter
+      - name: 4. Install Newman & HTML Extra Reporter
         run: |
           npm install -g newman newman-reporter-htmlextra
 
-      - name: 6. Prepare Report Directories
+      - name: 5. Prepare Report Directories
         run: |
           mkdir -p HTML_Report
 
-      - name: 7. Run Newman API Tests - FR-04 (User Profile)
+      - name: 6. Run Newman API Tests - FR-04 (User Profile)
         id: test_fr04
         continue-on-error: true
         run: |
@@ -54,7 +59,7 @@ jobs:
             --reporters "cli,htmlextra" \
             --reporter-htmlextra-export HTML_Report/23127052_FR04_Report.html
 
-      - name: 8. Run Newman API Tests - FR-07 (Shopping Cart)
+      - name: 7. Run Newman API Tests - FR-07 (Shopping Cart)
         id: test_fr07
         continue-on-error: true
         run: |
@@ -63,7 +68,7 @@ jobs:
             --reporters "cli,htmlextra" \
             --reporter-htmlextra-export HTML_Report/23127052_FR07_Report.html
 
-      - name: 9. Run Newman API Tests - FR-14 (Category Management)
+      - name: 8. Run Newman API Tests - FR-14 (Category Management)
         id: test_fr14
         continue-on-error: true
         run: |
@@ -72,7 +77,7 @@ jobs:
             --reporters "cli,htmlextra" \
             --reporter-htmlextra-export HTML_Report/23127052_FR14_Report.html
 
-      - name: 10. Upload Newman HTML Reports
+      - name: 9. Upload Newman HTML Reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -80,7 +85,7 @@ jobs:
           path: HTML_Report/*.html
           retention-days: 14
 
-      - name: 11. Evaluate Quality Gate Status
+      - name: 10. Evaluate Quality Gate Status
         run: |
           echo "=========================================="
           echo "       CI/CD TEST EXECUTION SUMMARY       "
