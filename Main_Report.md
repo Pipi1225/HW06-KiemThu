@@ -287,5 +287,33 @@ Tổng hợp danh sách các lỗi phát hiện được trong quá trình thự
 | **#17** | FR-14 | `POST /api/categories` | Crash 500 Internal Server Error khi gửi Content-Type dạng XML | Test 35 | **Medium** |
 | **#18** | FR-14 | `POST /api/categories` | Trả về sai HTTP status code khi gọi sai Method (404 Not Found thay vì 405) | Test E2 | **Low** |
 
-## 5. Postman Features được sử dụng trong bài 
+## 5. Postman Features được sử dụng trong bài
 
+Trong bài tập HW06, em đã vận dụng tối đa các tính năng cốt lõi và nâng cao của Postman để xây dựng bộ kịch bản kiểm thử API tự động, bao gồm:
+
+1. **Workspaces & Collections Management:**
+   - Tạo và phân bổ 3 Collections chuyên biệt tương ứng 3 module kiểm thử: FR-04 (`PUT /api/users/me`), FR-07 (`POST /api/cart`), và FR-14 (`POST /api/categories`).
+   - Sắp xếp các request tuần tự: Đăng nhập cấp Token (`Login User`, `Login Admin`) -> Chạy kiểm thử chức năng -> API Chaining kiểm tra trạng thái CSDL.
+
+2. **Environment & Global Variables (`pm.environment`):**
+   - Quản lý tập trung các biến cấu hình qua file `23127052_HW06_Env.postman_environment.json`: `base_url`, `student_id` (`23127052`), `user_token`, `admin_token`, `latest_created_category_id`.
+   - Trích xuất động và lưu trữ token sau khi đăng nhập thành công vào biến môi trường bằng `pm.environment.set()`.
+
+3. **Pre-request Scripts:**
+   - Tự động gắn header định danh sinh viên `X-Student-Id: 23127052` vào mọi HTTP request trước khi gửi đi.
+   - Thiết lập header `Authorization: Bearer {{token}}` và khởi tạo các payload dữ liệu động (dynamic timestamp, random unique category name).
+
+4. **Tests Scripts & Chai Assertion Library (`pm.test`, `pm.expect`):**
+   - Xây dựng hơn 120 assertions kiểm thử tự động trên nhiều phương diện: kiểm tra HTTP status code (`pm.response.to.have.status`), thời gian phản hồi, và kiểm tra thuộc tính dữ liệu JSON.
+
+5. **API Chaining (`pm.sendRequest`):**
+   - Sử dụng hàm `pm.sendRequest` trong tab Tests để gửi các request phụ (`GET /api/users/me`, `GET /api/cart`, `GET /api/categories`) ngay sau khi thực thi request chính nhằm xác minh tính toàn vẹn và sự biến đổi trạng thái (State Transition) trong cơ sở dữ liệu thực tế.
+
+6. **JSON Schema Validation (`tv4`):**
+   - Định nghĩa JSON Schema theo chuẩn draft-04 và sử dụng `tv4.validateResult()` để kiểm định tính tuân thủ 100% của Response Body so với tài liệu đặc tả API.
+
+7. **Authorization & Security Testing:**
+   - Cấu hình Bearer Token cấp Collection và chủ động ghi đè token ở từng request riêng lẻ để kiểm tra cơ chế phân quyền (RBAC: User thường không được gọi API Admin) và các kịch bản bảo mật (No Auth, Token hết hạn, Token giả mạo).
+
+8. **Automated CLI Execution với Newman:**
+   - Sử dụng Newman CLI kết hợp thư viện `newman-reporter-htmlextra` để thực thi tự động toàn bộ test suite từ terminal và xuất ra các dashboard báo cáo HTML trực quan.

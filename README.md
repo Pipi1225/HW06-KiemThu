@@ -10,11 +10,11 @@
 
 | No. | Criteria | Max Grade | Self-Assessed Grade |
 | :---: | :--- | :---: | :---: |
-| **1** | **API 1 (Pool A - FR-04)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 |  |
-| **2** | **API 2 (Pool B - FR-07)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 |  |
-| **3** | **API 3 (Pool C - FR-14)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 |  |
-| **4** | **Agent Skills** *(AI-driven test generator)* | 10 |  |
-| | **Total** | **100** |  |
+| **1** | **API 1 (Pool A - FR-04)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 | **30** |
+| **2** | **API 2 (Pool B - FR-07)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 | **30** |
+| **3** | **API 3 (Pool C - FR-14)** — Full pipeline *(generate + audit + extend + execute + bugs)* | 30 | **30** |
+| **4** | **Agent Skills** *(AI-driven test generator)* | 10 | **10** |
+| | **Total** | **100** | **100** |
 
 ---
 
