@@ -1,7 +1,8 @@
 # BUG REPORT
 
-- Student name: Dương Gia Huy
-- Student ID: 23127052
+- **Student name:** Dương Gia Huy
+- **Student ID:** 23127052
+- **GitHub Repository:** [https://github.com/Pipi1225/HW06-KiemThu](https://github.com/Pipi1225/HW06-KiemThu)
 
 ---
 
@@ -149,4 +150,49 @@
 - **Github Issues Link:** https://github.com/Pipi1225/HW06-KiemThu/issues/14
 - **Screenshot:**
 
-  ![Bug 14](images/Bug_14.jpg) 
+  ![Bug 14](images/Bug_14.jpg)
+
+---
+
+## III. BUGS TRONG CHỨC NĂNG FR-14: QUẢN LÝ DANH MỤC (POST /api/categories)
+
+### Bug 15: Lỗ hổng kiểm soát truy cập (Broken Access Control) - User thường tự ý tạo Danh mục
+- **Mô tả Bug:** API `POST /api/categories` không kiểm tra vai trò người dùng trong JWT Token. Khi gửi request kèm Token của tài khoản thường (`role = 'user'`), server vẫn phản hồi `200 OK` và thêm danh mục mới vào hệ thống. Hành vi này vi phạm nghiêm trọng yêu cầu phân quyền FR-12 và nguyên tắc kiểm soát truy cập dựa trên vai trò (RBAC / Broken Access Control).
+- **Test Case liên quan:** Test 31: `[Security - SEC-03] Kiểm tra phân quyền Admin: User thường không được tạo danh mục -> Bị từ chối HTTP 403`
+- **Endpoint:** `POST /api/categories`
+- **Severity:** Critical
+- **Github Issues Link:** https://github.com/Pipi1225/HW06-KiemThu/issues/15
+- **Screenshot:**
+
+  ![Bug 15](images/Bug_15.jpg)
+
+### Bug 16: Thiếu toàn bộ Validation cho trường Tên danh mục (Name)
+- **Mô tả Bug:** Đặc tả FR-14 quy định tên danh mục là bắt buộc, không được để trống và có độ dài tối đa 255 ký tự. Tuy nhiên, server chấp nhận chuỗi rỗng `""`, toàn khoảng trắng `"   "`, giá trị `null`, kiểu dữ liệu boolean, mảng, object, và chuỗi vượt quá 255 ký tự mà vẫn trả về `200 OK` thay vì báo lỗi HTTP 400 Bad Request (làm thất bại 9 test cases từ Test 12 đến Test 21).
+- **Test Case liên quan:** Test 12, 13, 14, 15, 17, 18, 19, 20, 21
+- **Endpoint:** `POST /api/categories`
+- **Severity:** High
+- **Github Issues Link:** https://github.com/Pipi1225/HW06-KiemThu/issues/16
+- **Screenshot:**
+
+  ![Bug 16](images/Bug_16.jpg)
+
+### Bug 17: Server crash lỗi 500 Internal Server Error khi gửi Content-Type XML
+- **Mô tả Bug:** Khi client gửi request tạo danh mục với header `Content-Type: application/xml`, server Express không xử lý an toàn kiểu dữ liệu đầu vào mà bị sập lỗi `500 Internal Server Error` kèm mã lỗi HTML stack trace thay vì từ chối hợp lệ bằng HTTP 400 hoặc HTTP 415 Unsupported Media Type.
+- **Test Case liên quan:** Test 35: `[Security - Content-Type] Gửi payload dạng XML -> Bị từ chối HTTP 400 hoặc 415`
+- **Endpoint:** `POST /api/categories`
+- **Severity:** Medium
+- **Github Issues Link:** https://github.com/Pipi1225/HW06-KiemThu/issues/17
+- **Screenshot:**
+
+  ![Bug 17](images/Bug_17.jpg)
+
+### Bug 18: Phản hồi sai HTTP Status Code khi gọi sai HTTP Method (404 thay vì 405)
+- **Mô tả Bug:** Khi client gửi request bằng phương thức không được hỗ trợ (`PUT /api/categories`), hệ thống trả về mã lỗi `404 Not Found` (do router không map route) thay vì trả về chuẩn `405 Method Not Allowed` theo chuẩn HTTP RFC 9110 để thông báo cho client biết endpoint có tồn tại nhưng không hỗ trợ method này.
+- **Test Case liên quan:** Test E2: `[Method] Gửi sai HTTP Method (PUT/PATCH) tới /api/categories -> Expect HTTP 405 Method Not Allowed`
+- **Endpoint:** `POST /api/categories`
+- **Severity:** Low
+- **Github Issues Link:** https://github.com/Pipi1225/HW06-KiemThu/issues/18
+- **Screenshot:**
+
+  ![Bug 18](images/Bug_18.jpg)
+ 

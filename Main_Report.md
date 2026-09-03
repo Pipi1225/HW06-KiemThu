@@ -282,6 +282,10 @@ Tổng hợp danh sách các lỗi phát hiện được trong quá trình thự
 | **#12** | FR-07 | `POST /api/cart` | Thiếu giới hạn trần số lượng mua (cho phép đặt số lượng phi lý 999,999) | Test E1 | **Medium** |
 | **#13** | FR-07 | `POST /api/cart` | Chấp nhận chuỗi SQL Injection ở trường ID (`1 OR 1=1`) không ném lỗi 400 | Test 33 | **Medium** |
 | **#14** | FR-07 | `POST /api/cart` | Thiếu validation độ dài tối đa cho trường Name sản phẩm (>255 ký tự) | Test 12 | **Low** |
+| **#15** | FR-14 | `POST /api/categories` | Leo thang đặc quyền / BOLA: User thường tự ý gọi API Admin tạo Danh mục mới | Test 31 | **Critical** |
+| **#16** | FR-14 | `POST /api/categories` | Thiếu toàn bộ validation cho trường Name danh mục (rỗng, space, null, mảng, >255) | Test 12–15, 17–21 | **High** |
+| **#17** | FR-14 | `POST /api/categories` | Crash 500 Internal Server Error khi gửi Content-Type dạng XML | Test 35 | **Medium** |
+| **#18** | FR-14 | `POST /api/categories` | Trả về sai HTTP status code khi gọi sai Method (404 Not Found thay vì 405) | Test E2 | **Low** |
 
-## 4. Postman Features được sử dụng trong bài 
+## 5. Postman Features được sử dụng trong bài 
 

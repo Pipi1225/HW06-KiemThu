@@ -1,0 +1,5 @@
+﻿Feature / API,Endpoint,Method,AI Generated,Human Added,Total Cases,Excluded (Audit),Executed,Passed,Failed,Bugs Found
+FR-04: Quản lý hồ sơ,/api/users/me,PUT,37,5,42,2,40,18,22,7
+FR-07: Giỏ hàng,/api/cart,POST,35,5,40,3,37,18,19,7
+FR-14: Danh mục,/api/categories,POST,35,5,40,3,37,25,12,4
+TỔNG CỘNG (TOTAL),ALL,ALL,107,15,122,8,114,61,53,18
