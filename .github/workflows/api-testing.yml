@@ -99,6 +99,6 @@ jobs:
              [ "${{ steps.test_fr14.outcome }}" != "success" ]; then
             echo "One or more test suites failed due to detected SUT bugs."
             # Uncomment the line below to strictly fail the pipeline when bugs are found
-            # exit 1
+            exit 1
           fi
           echo "Build completed successfully."
