@@ -161,41 +161,41 @@ END ALGORITHM
 
 | No. | Tựa đề | Nội dung | Status | Reasoning |
 |---|---|---|---|---|
-| 1 | [Schema] Response đúng định dạng JSON Object | Kiểm tra phản hồi trả về từ API phải là một JSON Object hợp lệ khi tạo thành công (HTTP 200/201). | | |
-| 2 | [Schema] Response chứa đúng các trường bắt buộc (`message`, `id`) | Kiểm tra response có thuộc tính `message` ("Category created") và `id` kiểu số nguyên dương. | | |
-| 3 | [Schema] Response không chứa các trường thừa không xác định | Kiểm tra response chỉ chứa chính xác 2 trường `message` và `id`, không rò rỉ dữ liệu nội bộ. | | |
-| 4 | [Schema] Validate toàn bộ response với JSON Schema (`tv4`/`ajv`) | Dùng thư viện schema validation của Postman để đối chiếu cấu trúc JSON response 100%. | | |
-| 5 | [Domain - Valid] Tạo danh mục với tên tiếng Việt có dấu | Body `{"name": "Đồng hồ thông minh"}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 6 | [Domain - Valid] Tạo danh mục với tên tiếng Anh không dấu | Body `{"name": "Smart Watch"}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 7 | [Domain - Valid] Tạo danh mục với tên chứa chữ số | Body `{"name": "iPhone 15 Series"}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 8 | [Domain - Valid] Tên chứa ký tự đặc biệt thông dụng (`&`, `-`, `/`) | Body `{"name": "Âm thanh & Phụ kiện"}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 9 | [Domain - Valid] Tên đạt độ dài tối thiểu (1 ký tự) | Body `{"name": "A"}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 10 | [Domain - Valid] Tên đạt độ dài tối đa hợp lệ (255 ký tự) | Body `{"name": "a".repeat(255)}` -> Kỳ vọng HTTP 200/201 OK. | | |
-| 11 | [Domain - Valid] Tên chứa khoảng trắng ở đầu và cuối | Body `{"name": "  Máy tính bảng  "}` -> Kỳ vọng HTTP 200/201 OK, hệ thống tự động trim. | | |
-| 12 | [Domain - Invalid] Tên danh mục là chuỗi rỗng (`""`) | Body `{"name": ""}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 13 | [Domain - Invalid] Tên danh mục chỉ chứa toàn khoảng trắng (`"   "`) | Body `{"name": "   "}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 14 | [Domain - Invalid] Thiếu trường `name` trong request body | Body `{}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 15 | [Domain - Invalid] Trường `name` có giá trị `null` | Body `{"name": null}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 16 | [Domain - Invalid] Trường `name` có kiểu dữ liệu số nguyên (12345) | Body `{"name": 12345}` -> Xử lý an toàn (HTTP 400 hoặc ép kiểu chuỗi). | | |
-| 17 | [Domain - Invalid] Trường `name` có kiểu dữ liệu boolean (`true`) | Body `{"name": true}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 18 | [Domain - Invalid] Trường `name` có kiểu dữ liệu mảng (`[]`) | Body `{"name": ["Thời trang"]}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 19 | [Domain - Invalid] Trường `name` có kiểu dữ liệu object (`{}`) | Body `{"name": {"sub": "con"}}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 20 | [Domain - Invalid] Tên danh mục vượt quá độ dài tối đa (256 ký tự) | Body `{"name": "a".repeat(256)}` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 21 | [Domain - Edge] Request body hoàn toàn rỗng (Empty payload) | Raw body `""` -> Kỳ vọng HTTP 400 Bad Request. | | |
-| 22 | [Domain - Edge] Gửi kèm trường không xác định ngoài `name` | Body `{"name": "Gia dụng", "extra_field": "test"}` -> Xử lý an toàn (bỏ qua hoặc 400). | | |
-| 23 | [State] POST response trả về `id` mới hợp lệ (> 0) | Xác nhận `id` trả về là số nguyên dương và lưu vào biến môi trường `latest_created_category_id`. | | |
-| 24 | [State - Chained] Gọi `GET /api/categories` trả về HTTP 200 OK | Gửi request `GET /api/categories` qua `pm.sendRequest` để đọc danh sách danh mục hiện tại. | | |
-| 25 | [State - Chained] Danh mục vừa tạo xuất hiện trong `GET /api/categories` | Tìm kiếm trong mảng danh mục có phần tử thỏa mãn `item.id === createdId`. | | |
-| 26 | [State - Chained] Tên danh mục trong CSDL khớp với `name` đã gửi | Đối chiếu `foundCategory.name` trả về từ GET với `reqBody.name` gửi lên trong POST. | | |
-| 27 | [State - Chained] Mọi danh mục trong danh sách đều có cấu trúc `{id, name}` | Duyệt qua mảng kết quả của GET và kiểm tra từng item đều có đầy đủ `id` và `name`. | | |
-| 28 | [State] Xử lý khi tạo danh mục trùng tên đã tồn tại | Gửi tên trùng với danh mục đã có trong hệ thống -> Kiểm tra phản hồi (200/201/409). | | |
-| 29 | [Security - SEC-02] Không gửi Authorization Header -> Bị từ chối 401 | Gửi request không có token -> Kỳ vọng HTTP 401 Unauthorized. | | |
-| 30 | [Security - SEC-02] Gửi Token không hợp lệ hoặc hết hạn -> Bị từ chối 401 | Gửi `Authorization: Bearer INVALID_TOKEN` -> Kỳ vọng HTTP 401 Unauthorized. | | |
-| 31 | [Security - SEC-03] Kiểm tra phân quyền Admin: User thường không được tạo danh mục -> Bị từ chối 403 | FR-12: Chỉ role Admin mới được tạo danh mục. Dùng token user thường (`test@eshop.com`) -> Kỳ vọng HTTP 403. | | |
-| 32 | [Security - SEC-05 / SQLi] Tấn công SQL Injection vào trường `name` | Payload `{"name": "' OR 1=1 --"}` hoặc `DROP TABLE` -> Kỳ vọng không sập 500 DB. | | |
-| 33 | [Security - SEC-04 / XSS] Tấn công Stored XSS vào trường `name` | Payload `{"name": "<script>alert('XSS')</script>"}` -> Không crash 500, sanitize an toàn khi đọc lại. | | |
-| 34 | [Security - IDOR / Tampering] Client tự ý chỉ định trường `id` trong body | Body `{"name": "Test", "id": 9999}` -> Server tự sinh ID, không cho phép ghi đè ID theo ý client. | | |
-| 35 | [Security - Content-Type] Gửi payload dạng XML / Text thay vì JSON | Đặt header `Content-Type: application/xml` -> Kỳ vọng HTTP 400 hoặc 415 Unsupported Media Type. | | |
+| 1 | [Schema] Response đúng định dạng JSON Object | Kiểm tra phản hồi trả về từ API phải là một JSON Object hợp lệ khi tạo thành công (HTTP 200/201). | VALID | Phù hợp với cấu trúc phản hồi chuẩn RESTful khi tạo mới tài nguyên thành công. |
+| 2 | [Schema] Response chứa đúng các trường bắt buộc (`message`, `id`) | Kiểm tra response có thuộc tính `message` ("Category created") và `id` kiểu số nguyên dương. | VALID | Khớp chính xác với cấu trúc response thực tế của server eShop khi tạo category. |
+| 3 | [Schema] Response không chứa các trường thừa không xác định | Kiểm tra response chỉ chứa chính xác 2 trường `message` và `id`, không rò rỉ dữ liệu nội bộ. | VALID | Kiểm tra an toàn Schema nhằm ngăn ngừa rò rỉ thông tin nội bộ (Information Disclosure). |
+| 4 | [Schema] Validate toàn bộ response với JSON Schema (`tv4`/`ajv`) | Dùng thư viện schema validation của Postman để đối chiếu cấu trúc JSON response 100%. | VALID | Phương pháp chuẩn xác nhất trong kiểm thử tự động để xác minh toàn diện Schema. |
+| 5 | [Domain - Valid] Tạo danh mục với tên tiếng Việt có dấu | Body `{"name": "Đồng hồ thông minh"}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Đảm bảo hệ thống và cơ sở dữ liệu hỗ trợ tốt định dạng chuỗi ký tự UTF-8 có dấu. |
+| 6 | [Domain - Valid] Tạo danh mục với tên tiếng Anh không dấu | Body `{"name": "Smart Watch"}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Kịch bản dữ liệu thông thường (Happy Path) với bảng mã ASCII chuẩn. |
+| 7 | [Domain - Valid] Tạo danh mục với tên chứa chữ số | Body `{"name": "iPhone 15 Series"}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Tên danh mục công nghệ thực tế thường chứa cả chữ và số. |
+| 8 | [Domain - Valid] Tên chứa ký tự đặc biệt thông dụng (`&`, `-`, `/`) | Body `{"name": "Âm thanh & Phụ kiện"}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Ký tự liên kết ngành hàng phổ biến trong hệ thống thương mại điện tử. |
+| 9 | [Domain - Valid] Tên đạt độ dài tối thiểu (1 ký tự) | Body `{"name": "A"}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Kiểm tra giá trị biên dưới hợp lệ (Boundary) của độ dài tên danh mục. |
+| 10 | [Domain - Valid] Tên đạt độ dài tối đa hợp lệ (255 ký tự) | Body `{"name": "a".repeat(255)}` -> Kỳ vọng HTTP 200/201 OK. | VALID | Kiểm tra giá trị biên trên hợp lệ theo chuẩn độ dài chuỗi VARCHAR(255) trong CSDL. |
+| 11 | [Domain - Valid] Tên chứa khoảng trắng ở đầu và cuối | Body `{"name": "  Máy tính bảng  "}` -> Kỳ vọng HTTP 200/201 OK, hệ thống tự động trim. | VALID | Kiểm tra khả năng tự động xử lý và làm sạch (trim) khoảng trắng thừa của hệ thống. |
+| 12 | [Domain - Invalid] Tên danh mục là chuỗi rỗng (`""`) | Body `{"name": ""}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Ràng buộc FR-14 quy định tên danh mục là bắt buộc, không được để trống. |
+| 13 | [Domain - Invalid] Tên danh mục chỉ chứa toàn khoảng trắng (`"   "`) | Body `{"name": "   "}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Sau khi trim khoảng trắng, chuỗi rỗng phải bị từ chối bằng lỗi 400. |
+| 14 | [Domain - Invalid] Thiếu trường `name` trong request body | Body `{}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Kiểm tra validation thiếu trường bắt buộc (Missing Required Field). |
+| 15 | [Domain - Invalid] Trường `name` có giá trị `null` | Body `{"name": null}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Ngăn chặn việc truyền giá trị null vào trường NOT NULL trong cơ sở dữ liệu. |
+| 16 | [Domain - Invalid] Trường `name` có kiểu dữ liệu số nguyên (12345) | Body `{"name": 12345}` -> Xử lý an toàn (HTTP 400 hoặc ép kiểu chuỗi). | INCOMPLETE | Cần xác định rõ hành vi mong muốn là tự động ép kiểu thành chuỗi hay từ chối 400 để viết assertion chính xác. |
+| 17 | [Domain - Invalid] Trường `name` có kiểu dữ liệu boolean (`true`) | Body `{"name": true}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Kiểm tra bắt lỗi vi phạm kiểu dữ liệu (Type Mismatch). |
+| 18 | [Domain - Invalid] Trường `name` có kiểu dữ liệu mảng (`[]`) | Body `{"name": ["Thời trang"]}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Ngăn chặn việc truyền mảng vào trường lưu chuỗi đơn. |
+| 19 | [Domain - Invalid] Trường `name` có kiểu dữ liệu object (`{}`) | Body `{"name": {"sub": "con"}}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Ngăn chặn việc truyền object lồng nhau gây lỗi phân tích cú pháp DTO. |
+| 20 | [Domain - Invalid] Tên danh mục vượt quá độ dài tối đa (256 ký tự) | Body `{"name": "a".repeat(256)}` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Kiểm tra giá trị biên ngoài không hợp lệ, chống tràn bộ nhớ lưu trữ CSDL. |
+| 21 | [Domain - Edge] Request body hoàn toàn rỗng (Empty payload) | Raw body `""` -> Kỳ vọng HTTP 400 Bad Request. | VALID | Đảm bảo server xử lý an toàn khi client gửi payload rỗng mà không bị crash. |
+| 22 | [Domain - Edge] Gửi kèm trường không xác định ngoài `name` | Body `{"name": "Gia dụng", "extra_field": "test"}` -> Xử lý an toàn (bỏ qua hoặc 400). | VALID | Kiểm tra tính an toàn khi nhận trường lạ (DTO Pollution / Extra Fields Handling). |
+| 23 | [State] POST response trả về `id` mới hợp lệ (> 0) | Xác nhận `id` trả về là số nguyên dương và lưu vào biến môi trường `latest_created_category_id`. | VALID | Cần thiết để kiểm tra ID tự tăng và phục vụ kịch bản API Chaining tiếp theo. |
+| 24 | [State - Chained] Gọi `GET /api/categories` trả về HTTP 200 OK | Gửi request `GET /api/categories` qua `pm.sendRequest` để đọc danh sách danh mục hiện tại. | VALID | Bước khởi tạo API Chaining để xác minh tính nhất quán của trạng thái hệ thống. |
+| 25 | [State - Chained] Danh mục vừa tạo xuất hiện trong `GET /api/categories` | Tìm kiếm trong mảng danh mục có phần tử thỏa mãn `item.id === createdId`. | VALID | Xác nhận danh mục mới đã thực sự được lưu bền vững (Persistent) vào CSDL. |
+| 26 | [State - Chained] Tên danh mục trong CSDL khớp với `name` đã gửi | Đối chiếu `foundCategory.name` trả về từ GET với `reqBody.name` gửi lên trong POST. | VALID | Đảm bảo tính toàn vẹn của dữ liệu sau khi ghi, không bị biến dạng hoặc cắt cụt. |
+| 27 | [State - Chained] Mọi danh mục trong danh sách đều có cấu trúc `{id, name}` | Duyệt qua mảng kết quả của GET và kiểm tra từng item đều có đầy đủ `id` và `name`. | INVALID | Kiểm tra toàn bộ danh mục của API GET không thuộc phạm vi của kịch bản POST này, dễ gây Flaky Test nếu data cũ có lỗi. |
+| 28 | [State] Xử lý khi tạo danh mục trùng tên đã tồn tại | Gửi tên trùng với danh mục đã có trong hệ thống -> Kiểm tra phản hồi (200/201/409). | INCOMPLETE | Đặc tả chưa nêu rõ tên danh mục có bắt buộc Unique hay không, cần làm rõ nghiệp vụ để set mã lỗi 409 hoặc chấp nhận 200/201. |
+| 29 | [Security - SEC-02] Không gửi Authorization Header -> Bị từ chối 401 | Gửi request không có token -> Kỳ vọng HTTP 401 Unauthorized. | VALID | Tuân thủ yêu cầu xác thực bắt buộc của SEC-02 và FR-12. |
+| 30 | [Security - SEC-02] Gửi Token không hợp lệ hoặc hết hạn -> Bị từ chối 401 | Gửi `Authorization: Bearer INVALID_TOKEN` -> Kỳ vọng HTTP 401 Unauthorized. | VALID | Kiểm tra cơ chế giải mã và xác minh tính hợp lệ của chữ ký JWT token. |
+| 31 | [Security - SEC-03] Kiểm tra phân quyền Admin: User thường không được tạo danh mục -> Bị từ chối 403 | FR-12: Chỉ role Admin mới được tạo danh mục. Dùng token user thường (`test@eshop.com`) -> Kỳ vọng HTTP 403. | VALID | Kiểm thử phân quyền RBAC trọng yếu, đảm bảo chỉ có Admin mới được quản lý danh mục. |
+| 32 | [Security - SEC-05 / SQLi] Tấn công SQL Injection vào trường `name` | Payload `{"name": "' OR 1=1 --"}` hoặc `DROP TABLE` -> Kỳ vọng không sập 500 DB. | VALID | Kiểm tra lỗ hổng Injection cơ bản nhằm đảm bảo an toàn truy vấn cơ sở dữ liệu. |
+| 33 | [Security - SEC-04 / XSS] Tấn công Stored XSS vào trường `name` | Payload `{"name": "<script>alert('XSS')</script>"}` -> Không crash 500, sanitize an toàn khi đọc lại. | VALID | Kiểm tra tính năng làm sạch (Sanitize) mã độc script trước khi lưu vào hệ thống. |
+| 34 | [Security - IDOR / Tampering] Client tự ý chỉ định trường `id` trong body | Body `{"name": "Test", "id": 9999}` -> Server tự sinh ID, không cho phép ghi đè ID theo ý client. | VALID | Chống lỗi ID Tampering, đảm bảo khóa chính ID do database tự động quản lý. |
+| 35 | [Security - Content-Type] Gửi payload dạng XML / Text thay vì JSON | Đặt header `Content-Type: application/xml` -> Kỳ vọng HTTP 400 hoặc 415 Unsupported Media Type. | VALID | Đảm bảo máy chủ REST API chỉ chấp nhận định dạng `application/json` chuẩn. |
 
 ## 2. Extend Test Script
 ### 2.1. FR-04: Quản lý hồ sơ cá nhân
@@ -236,7 +236,16 @@ END ALGORITHM
 
 | No. | Tựa đề | Nội dung / Kịch bản test | Reasoning |
 |---|---|---|---|
-|  |  |  |  |
+| E1 | [Security] Gửi payload tên danh mục cực lớn (DoS) | Truyền chuỗi name vài Megabytes -> Expect HTTP 413 Payload Too Large. | Kiểm tra giới hạn buffer và dung lượng request body của web server, ngăn chặn DoS. |
+| E2 | [Method] Gửi sai HTTP Method | Gửi request bằng method PUT hoặc PATCH tới /api/categories thay vì POST -> Expect HTTP 405 Method Not Allowed. | Kiểm tra tầng định tuyến router phản hồi đúng mã 405 khi gọi sai method trên collection endpoint. |
+| E3 | [Security / Race Condition] Tạo đồng thời danh mục trùng tên | Bắn 2 request POST /api/categories cùng tên trong khoảng 10ms -> Expect xử lý tuần tự, không tạo 2 danh mục trùng lặp rác. | Kiểm tra cơ chế khóa CSDL (Database Lock) và tính nhất quán dữ liệu khi có tranh chấp đồng thời. |
+| E4 | [Format] Tên chứa ký tự khoảng trắng tàng hình (Zero-width space) | Truyền tên danh mục chứa ký tự xuống dòng (\n) hoặc Zero-width space (\u200B) -> Expect HTTP 400 hoặc làm sạch an toàn. | Ngăn chặn kỹ thuật vượt mặt validation và lỗi vỡ layout hiển thị trên giao diện người dùng. |
+| E5 | [State] Kiểm tra trạng thái mặc định của danh mục mới | Sau khi POST thành công, gọi GET /api/categories kiểm tra danh mục mới được tự động kích hoạt hiển thị (is_active: true). | Xác minh tính đúng đắn của vòng đời trạng thái dữ liệu mặc định mà đặc tả API không nêu chi tiết. |
+
+#### Lý do AI bỏ sót:
+- Prompt chỉ cung cấp schema cơ bản {"name": "Tên DM"} mà không đề cập đến cấu hình giới hạn kích thước request của server, ràng buộc tính duy nhất giữa các bản ghi và xử lý khoảng trắng nâng cao.
+- AI chỉ kiểm thử tĩnh theo luồng tuần tự đơn lẻ nên bỏ sót các kịch bản chạy đồng thời (race condition khi tạo trùng tên), lỗi gọi sai HTTP method (405) và các ký tự đặc biệt tàng hình (zero-width space).
+- API chỉ trả về phản hồi tối giản {"message": "Category created", "id": ...} mà không trả về toàn bộ thuộc tính, khiến AI không nhận biết được các giá trị mặc định và không kiểm tra được tính toàn vẹn trạng thái nếu không chủ động thiết kế API Chaining để verify sâu.
 
 ## 3. Execution of Test Script
 Chi tiết phần kết quả của Test script của các FR nằm trong folder `HTML_Report`.

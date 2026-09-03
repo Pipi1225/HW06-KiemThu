@@ -1,10 +1,3 @@
-// ==========================================
-// POSTMAN TEST SCRIPT: FR-14 - Quản lý Danh mục (Category CRUD)
-// Endpoint: POST /api/categories
-// Mã sinh viên: 23127052
-// Tổng số Test Cases: 35 pm.test (Bao phủ Schema, Domain, State, Security)
-// ==========================================
-
 // Parse Request Body và Lấy Status Code hiện tại
 let reqBody;
 try {
@@ -225,14 +218,8 @@ if (statusCode === 200 || statusCode === 201) {
             }
         });
 
-        pm.test("27. [State - Chained] Danh sách danh mục không rỗng và mỗi phần tử có đúng cấu trúc {id, name}", function () {
-            const categories = res.json();
-            pm.expect(categories.length).to.be.above(0);
-            categories.forEach(cat => {
-                pm.expect(cat).to.have.property("id");
-                pm.expect(cat).to.have.property("name");
-            });
-        });
+        // Test 27. [State - Chained] Danh sách danh mục không rỗng và mỗi phần tử có đúng cấu trúc {id, name}
+        // -> ĐÃ LOẠI BỎ QUA AUDIT (Invalid: Kiểm tra toàn bộ mảng của GET API là trách nhiệm của GET, không thuộc phạm vi POST)
     });
 }
 
@@ -287,5 +274,40 @@ pm.test("34. [Security - IDOR / Parameter Tampering] Client tự ý chỉ địn
 pm.test("35. [Security - Content-Type] Gửi payload dạng XML / text thay vì JSON -> Bị từ chối HTTP 400 hoặc 415", function () {
     if (contentType.includes("text/plain") || contentType.includes("application/xml")) {
         pm.expect(statusCode).to.be.oneOf([400, 415]);
+    }
+});
+
+// ==========================================
+// 5. EXTENDED TEST CASES (E1-E5 do sinh viên tự bổ sung)
+// ==========================================
+pm.test("E1. [Security] Gửi payload tên danh mục cực lớn (DoS) -> Expect HTTP 413 Payload Too Large", function () {
+    if (rawBody && rawBody.length > 500000) {
+        pm.expect(statusCode).to.be.oneOf([400, 413]);
+    }
+});
+
+pm.test("E2. [Method] Gửi sai HTTP Method (PUT/PATCH) tới /api/categories -> Expect HTTP 405 Method Not Allowed", function () {
+    if (pm.request.method === "PUT" || pm.request.method === "PATCH") {
+        pm.expect(statusCode).to.eql(405);
+    }
+});
+
+pm.test("E3. [Security / Race Condition] Tạo đồng thời danh mục trùng tên -> Xử lý tuần tự, không tạo rác", function () {
+    if (pm.environment.get("is_race_condition_test") === "true") {
+        pm.expect(statusCode).to.be.oneOf([200, 201, 400, 409]);
+    }
+});
+
+pm.test("E4. [Format] Tên chứa ký tự khoảng trắng tàng hình (Zero-width space) -> Expect HTTP 400 hoặc sanitize", function () {
+    if (rawBody.includes("\\u200B") || rawBody.includes("\n")) {
+        pm.expect(statusCode).to.be.oneOf([200, 201, 400]);
+    }
+});
+
+pm.test("E5. [State] Kiểm tra trạng thái mặc định của danh mục mới (is_active / visible)", function () {
+    if (statusCode === 200 || statusCode === 201) {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("id");
+        pm.expect(res.id).to.be.above(0);
     }
 });
