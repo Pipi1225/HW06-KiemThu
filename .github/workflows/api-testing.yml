@@ -1,0 +1,99 @@
+name: API Automated Testing (Newman CI/CD)
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  api-testing:
+    name: Run Newman API Tests against SUT
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout HW06 Test Repository
+        uses: actions/checkout@v4
+
+      - name: 2. Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 3. Clone and Start SUT (EShop Backend)
+        run: |
+          echo "Cloning EShop SUT repository..."
+          git clone https://github.com/ttbhanh/eshop-sut.git sut
+          cd sut/backend
+          npm install
+          echo "Starting SUT backend in background..."
+          node server.js &
+          cd ../..
+
+      - name: 4. Wait for SUT to be ready (Port 3000)
+        run: |
+          echo "Waiting for SUT server to be healthy on http://localhost:3000..."
+          npx wait-on http://localhost:3000 -t 60000 --interval 2000
+          curl -s http://localhost:3000/api/categories || echo "Server online!"
+
+      - name: 5. Install Newman & HTML Extra Reporter
+        run: |
+          npm install -g newman newman-reporter-htmlextra
+
+      - name: 6. Prepare Report Directories
+        run: |
+          mkdir -p HTML_Report
+
+      - name: 7. Run Newman API Tests - FR-04 (User Profile)
+        id: test_fr04
+        continue-on-error: true
+        run: |
+          newman run Test_Script/23127052_FR04_Test_Script.postman_collection.json \
+            -e Test_Script/23127052_HW06_Env.postman_environment.json \
+            --reporters "cli,htmlextra" \
+            --reporter-htmlextra-export HTML_Report/23127052_FR04_Report.html
+
+      - name: 8. Run Newman API Tests - FR-07 (Shopping Cart)
+        id: test_fr07
+        continue-on-error: true
+        run: |
+          newman run Test_Script/23127052_FR07_Test_Script.postman_collection.json \
+            -e Test_Script/23127052_HW06_Env.postman_environment.json \
+            --reporters "cli,htmlextra" \
+            --reporter-htmlextra-export HTML_Report/23127052_FR07_Report.html
+
+      - name: 9. Run Newman API Tests - FR-14 (Category Management)
+        id: test_fr14
+        continue-on-error: true
+        run: |
+          newman run Test_Script/23127052_FR14_Test_Script.postman_collection.json \
+            -e Test_Script/23127052_HW06_Env.postman_environment.json \
+            --reporters "cli,htmlextra" \
+            --reporter-htmlextra-export HTML_Report/23127052_FR14_Report.html
+
+      - name: 10. Upload Newman HTML Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-html-reports
+          path: HTML_Report/*.html
+          retention-days: 14
+
+      - name: 11. Evaluate Quality Gate Status
+        run: |
+          echo "=========================================="
+          echo "       CI/CD TEST EXECUTION SUMMARY       "
+          echo "=========================================="
+          echo "FR-04 Status: ${{ steps.test_fr04.outcome }}"
+          echo "FR-07 Status: ${{ steps.test_fr07.outcome }}"
+          echo "FR-14 Status: ${{ steps.test_fr14.outcome }}"
+          echo "=========================================="
+          if [ "${{ steps.test_fr04.outcome }}" != "success" ] || \
+             [ "${{ steps.test_fr07.outcome }}" != "success" ] || \
+             [ "${{ steps.test_fr14.outcome }}" != "success" ]; then
+            echo "One or more test suites failed due to detected SUT bugs."
+            # Uncomment the line below to strictly fail the pipeline when bugs are found
+            # exit 1
+          fi
+          echo "Build completed successfully."

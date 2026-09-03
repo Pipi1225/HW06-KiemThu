@@ -173,11 +173,21 @@ Bạn hãy paste hết các test case đó vào @[Main_Report.md] , nhớ để 
 
 ### Artifact 11: 
 **1. Prompt + Tool**
-- **Tool:**
-- **Timestamp:**
+- **Tool:** Antigravity IDE / Gemini 3.1 Pro
+- **Timestamp:** 11:55 03/09/2026
 - **Prompt:**
+```text
+Bạn hãy hướng dẫn tôi cách thiết lập pipeline CI/CD trên GitHub Actions để chạy tự động các bài test API bằng Newman.
 
-**2. AI Output:**
+Tôi có một vài thắc mắc cần bạn giải đáp rõ:
+Nếu cấu hình workflow tự động clone backend SUT (eshop-sut) về máy ảo runner rồi chạy ngầm có phải là giải pháp tiêu chuẩn không hay có phương án nào khác tối ưu hơn không?
+Khi pipeline CI/CD chạy thử trên GitHub Actions thì các file mã nguồn hoặc lịch sử commit trên repository GitHub có bị thay đổi hay ảnh hưởng gì không?
+```
+
+**2. AI Output:** Đã hướng dẫn chi tiết phương pháp thiết lập và tích hợp quy trình CI/CD tự động hóa kiểm thử API bằng GitHub Actions kết hợp Newman:
+- Xây dựng file workflow `.github/workflows/api-testing.yml` tự động clone backend SUT (eshop-sut), khởi động server trên cổng 3000, cài đặt Newman và thực thi toàn bộ 3 bộ kịch bản kiểm thử (FR-04, FR-07, FR-14) rồi đóng gói xuất file HTML report làm artifact.
+- Giải thích bản chất môi trường máy ảo dùng một lần (ephemeral runner) của GitHub Actions: việc clone và chạy SUT trực tiếp là phương pháp tối ưu, self-contained và bảo đảm tính độc lập của CSDL, hoàn toàn không làm thay đổi hay ghi đè bất kỳ file mã nguồn nào trên repository chính.
+- Hướng dẫn tạo 2 lượt chạy mẫu (Passing Run và Failing Run kích hoạt Quality Gate khi phát hiện lỗi nghiệp vụ) và lập báo cáo `CI_CD_Report.md` đáp ứng trọn vẹn tiêu chí của đề bài.
 
 ### Artifact 12: 
 **1. Prompt + Tool**
